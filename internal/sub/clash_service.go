@@ -1,6 +1,7 @@
 package sub
 
 import (
+	_ "embed"
 	"fmt"
 	"maps"
 	"strings"
@@ -10,6 +11,9 @@ import (
 
 	"github.com/mhsanaei/3x-ui/v3/internal/database/model"
 )
+
+//go:embed rulio_clash_template.yaml
+var rulioClashTemplate string
 
 type SubClashService struct {
 	enableRouting bool
@@ -78,22 +82,9 @@ func (s *SubClashService) GetClash(subId string, host string) (string, string, e
 	}
 	traffic, _ := subReq.AggregateTrafficByEmails(emails)
 
-	proxyNames := make([]string, 0, len(proxies)+1)
-	for _, proxy := range proxies {
-		if name, ok := proxy["name"].(string); ok && name != "" {
-			proxyNames = append(proxyNames, name)
-		}
-	}
-	proxyNames = append(proxyNames, "DIRECT")
-
-	config := map[string]any{
-		"proxies": proxies,
-		"proxy-groups": []map[string]any{{
-			"name":    "PROXY",
-			"type":    "select",
-			"proxies": proxyNames,
-		}},
-		"rules": []string{"MATCH,PROXY"},
+	config, err := buildRulioClashConfig(proxies)
+	if err != nil {
+		return "", "", err
 	}
 
 	if s.enableRouting {
@@ -109,6 +100,15 @@ func (s *SubClashService) GetClash(subId string, host string) (string, string, e
 
 	header := fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%d", traffic.Up, traffic.Down, traffic.Total, traffic.ExpiryTime/1000)
 	return string(finalYAML), header, nil
+}
+
+func buildRulioClashConfig(proxies []map[string]any) (map[string]any, error) {
+	var config map[string]any
+	if err := yaml.Unmarshal([]byte(rulioClashTemplate), &config); err != nil {
+		return nil, err
+	}
+	config["proxies"] = proxies
+	return config, nil
 }
 
 // ensureUniqueProxyNames keeps every proxy "name" non-empty and unique:
