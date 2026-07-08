@@ -97,8 +97,13 @@
 
 .sub-link-actions {
   display: flex;
+  align-items: center;
   gap: 4px;
   flex-shrink: 0;
+}
+
+.sub-import-btn {
+  min-width: 64px;
 }
 
 .sub-link-qr-popover {

@@ -23,6 +23,7 @@ import {
   AppleOutlined,
   CopyOutlined,
   DownOutlined,
+  ImportOutlined,
   MoonFilled,
   MoonOutlined,
   QrcodeOutlined,
@@ -125,6 +126,11 @@ export default function SubPage() {
     window.open(url, '_blank');
   }, []);
 
+  const openClient = useCallback((url: string) => {
+    if (!url) return;
+    window.location.href = url;
+  }, []);
+
   const shadowrocketUrl = useMemo(() => {
     if (!subUrl) return '';
     const separator = subUrl.includes('?') ? '&' : '?';
@@ -141,6 +147,11 @@ export default function SubPage() {
   const streisandUrl = useMemo(() => `streisand://import/${encodeURIComponent(subUrl)}`, []);
   const happUrl = useMemo(() => `happ://add/${subUrl}`, []);
   const incyUrl = useMemo(() => `incy://add/${subUrl}`, []);
+  const clashProfileName = useMemo(() => subTitle || sId || 'Subscription', []);
+  const clashInstallUrl = useMemo(
+    () => `clash://install-config?url=${encodeURIComponent(subClashUrl)}&name=${encodeURIComponent(clashProfileName)}`,
+    [clashProfileName],
+  );
 
   const pageClass = useMemo(() => {
     const classes = ['subscription-page'];
@@ -214,6 +225,12 @@ export default function SubPage() {
     { key: 'ios-happ', label: 'Happ', onClick: () => open(happUrl) },
     { key: 'ios-incy', label: 'Incy', onClick: () => open(incyUrl) },
   ], [copy, open, shadowrocketUrl, v2boxUrl, streisandUrl, happUrl, incyUrl]);
+
+  const clashImportMenuItems = useMemo(() => [
+    { key: 'flclash', label: 'FlClash', onClick: () => openClient(clashInstallUrl) },
+    { key: 'clashverge', label: 'Clash Verge', onClick: () => openClient(clashInstallUrl) },
+    { key: 'clash', label: 'Clash', onClick: () => openClient(clashInstallUrl) },
+  ], [clashInstallUrl, openClient]);
 
   const langMenuItems = useMemo(
     () => (LanguageManager.supportedLanguages as { value: string; name: string; icon: string }[]).map((l) => ({
@@ -381,6 +398,18 @@ export default function SubPage() {
                             {sId}
                           </a>
                           <div className="sub-link-actions">
+                            <Dropdown trigger={['click']} menu={{ items: clashImportMenuItems }}>
+                              <Button
+                                size="small"
+                                type="primary"
+                                className="sub-import-btn"
+                                icon={<ImportOutlined />}
+                                aria-label="导入到 Clash"
+                                title="导入到 Clash"
+                              >
+                                导入
+                              </Button>
+                            </Dropdown>
                             <Button size="small" icon={<CopyOutlined />} onClick={() => copy(subClashUrl)} aria-label={t('copy')} title={t('copy')} />
                             <Popover
                               trigger="click"
