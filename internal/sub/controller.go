@@ -100,6 +100,7 @@ type subControllerConfig struct {
 	subJsonFinalMask      string
 	subClashEnableRouting bool
 	subClashRules         string
+	subClashTemplate      string
 
 	subTitle         string
 	subSupportURL    string
@@ -187,6 +188,10 @@ func WithSUBClashRules(value string) SUBControllerOption {
 	return func(config *subControllerConfig) { config.subClashRules = value }
 }
 
+func WithSUBClashTemplate(value string) SUBControllerOption {
+	return func(config *subControllerConfig) { config.subClashTemplate = value }
+}
+
 func WithSUBTitle(value string) SUBControllerOption {
 	return func(config *subControllerConfig) { config.subTitle = value }
 }
@@ -269,7 +274,7 @@ func NewSUBController(g *gin.RouterGroup, options ...SUBControllerOption) *SUBCo
 
 		subService:      sub,
 		subJsonService:  NewSubJsonService(config.subJsonMux, config.subJsonRules, config.subJsonFinalMask, sub),
-		subClashService: NewSubClashService(config.subClashEnableRouting, config.subClashRules, sub),
+		subClashService: NewSubClashService(config.subClashEnableRouting, config.subClashRules, config.subClashTemplate, sub),
 
 		subTemplateCache: map[string]*cachedSubTemplate{},
 	}

@@ -196,6 +196,10 @@
           "subClashRules": {
             "type": "string"
           },
+          "subClashTemplate": {
+            "description": "Clash/Mihomo YAML template",
+            "type": "string"
+          },
           "subClashURI": {
             "type": "string"
           },
@@ -420,6 +424,7 @@
           "subClashEnableRouting",
           "subClashPath",
           "subClashRules",
+          "subClashTemplate",
           "subClashURI",
           "subClashUserAgentRegex",
           "subDomain",
@@ -667,6 +672,10 @@
           "subClashRules": {
             "type": "string"
           },
+          "subClashTemplate": {
+            "description": "Clash/Mihomo YAML template",
+            "type": "string"
+          },
           "subClashURI": {
             "type": "string"
           },
@@ -898,6 +907,7 @@
           "subClashEnableRouting",
           "subClashPath",
           "subClashRules",
+          "subClashTemplate",
           "subClashURI",
           "subClashUserAgentRegex",
           "subDomain",

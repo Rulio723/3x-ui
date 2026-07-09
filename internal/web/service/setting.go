@@ -18,6 +18,7 @@ import (
 	"github.com/xlzd/gotp"
 	"gorm.io/gorm"
 
+	"github.com/mhsanaei/3x-ui/v3/internal/clashtemplate"
 	"github.com/mhsanaei/3x-ui/v3/internal/config"
 	"github.com/mhsanaei/3x-ui/v3/internal/database"
 	"github.com/mhsanaei/3x-ui/v3/internal/database/model"
@@ -113,6 +114,7 @@ var defaultValueMap = map[string]string{
 	"subClashURI":                 "",
 	"subClashEnableRouting":       "false",
 	"subClashRules":               "",
+	"subClashTemplate":            "",
 	"subJsonMux":                  "",
 	"subJsonRules":                "",
 	"subJsonFinalMask":            "",
@@ -863,6 +865,10 @@ func (s *SettingService) GetSubClashRules() (string, error) {
 	return s.getString("subClashRules")
 }
 
+func (s *SettingService) GetSubClashTemplate() (string, error) {
+	return s.getString("subClashTemplate")
+}
+
 func (s *SettingService) GetSubJsonMux() (string, error) {
 	return s.getString("subJsonMux")
 }
@@ -1175,6 +1181,11 @@ func (s *SettingService) UpdateAllSetting(allSetting *entity.AllSetting, clears 
 	if err := validateSubUserAgentRegexes(allSetting); err != nil {
 		return err
 	}
+	clashTemplate, err := clashtemplate.Clean(allSetting.SubClashTemplate)
+	if err != nil {
+		return err
+	}
+	allSetting.SubClashTemplate = clashTemplate
 	if err := allSetting.CheckValid(); err != nil {
 		return err
 	}

@@ -62,6 +62,7 @@ export class AllSetting {
   subClashURI = '';
   subClashEnableRouting = false;
   subClashRules = '';
+  subClashTemplate = '';
   subJsonMux = '';
   subJsonRules = '';
   subJsonFinalMask = '';
