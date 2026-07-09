@@ -9,6 +9,7 @@ import (
 	"github.com/goccy/go-json"
 	yaml "github.com/goccy/go-yaml"
 
+	"github.com/mhsanaei/3x-ui/v3/internal/clashtemplate"
 	"github.com/mhsanaei/3x-ui/v3/internal/database/model"
 )
 
@@ -18,11 +19,12 @@ var rulioClashTemplate string
 type SubClashService struct {
 	enableRouting bool
 	clashRules    string
+	clashTemplate string
 	SubService    *SubService
 }
 
-func NewSubClashService(enableRouting bool, clashRules string, subService *SubService) *SubClashService {
-	return &SubClashService{enableRouting: enableRouting, clashRules: clashRules, SubService: subService}
+func NewSubClashService(enableRouting bool, clashRules string, clashTemplate string, subService *SubService) *SubClashService {
+	return &SubClashService{enableRouting: enableRouting, clashRules: clashRules, clashTemplate: clashTemplate, SubService: subService}
 }
 
 func (s *SubClashService) GetClash(subId string, host string) (string, string, error) {
@@ -82,7 +84,7 @@ func (s *SubClashService) GetClash(subId string, host string) (string, string, e
 	}
 	traffic, _ := subReq.AggregateTrafficByEmails(emails)
 
-	config, err := buildRulioClashConfig(proxies)
+	config, err := buildRulioClashConfigWithTemplate(proxies, s.clashTemplate)
 	if err != nil {
 		return "", "", err
 	}
@@ -103,10 +105,18 @@ func (s *SubClashService) GetClash(subId string, host string) (string, string, e
 }
 
 func buildRulioClashConfig(proxies []map[string]any) (map[string]any, error) {
-	var config map[string]any
-	if err := yaml.Unmarshal([]byte(rulioClashTemplate), &config); err != nil {
+	return buildRulioClashConfigWithTemplate(proxies, "")
+}
+
+func buildRulioClashConfigWithTemplate(proxies []map[string]any, template string) (map[string]any, error) {
+	if strings.TrimSpace(template) == "" {
+		template = rulioClashTemplate
+	}
+	config, err := clashtemplate.Parse(template)
+	if err != nil {
 		return nil, err
 	}
+	clashtemplate.CleanConfig(config)
 	config["proxies"] = proxies
 	return config, nil
 }
