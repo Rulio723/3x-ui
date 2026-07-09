@@ -1,5 +1,6 @@
-import { Input, InputNumber, Switch, Tabs } from 'antd';
-import { BranchesOutlined, CompassOutlined, IdcardOutlined, InfoCircleOutlined, NodeIndexOutlined, SafetyCertificateOutlined, SettingOutlined } from '@ant-design/icons';
+import { type ChangeEvent, useRef } from 'react';
+import { Button, Input, InputNumber, Space, Switch, Tabs } from 'antd';
+import { BranchesOutlined, CompassOutlined, DeleteOutlined, IdcardOutlined, InfoCircleOutlined, NodeIndexOutlined, SafetyCertificateOutlined, SettingOutlined, UploadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { AllSetting } from '@/models/setting';
 import { SettingListItem } from '@/components/ui';
@@ -16,6 +17,16 @@ interface SubscriptionGeneralTabProps {
 export default function SubscriptionGeneralTab({ allSetting, updateSetting }: SubscriptionGeneralTabProps) {
   const { t } = useTranslation();
   const { isMobile } = useMediaQuery();
+  const clashTemplateInputRef = useRef<HTMLInputElement | null>(null);
+
+  function importClashTemplate(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => updateSetting({ subClashTemplate: String(reader.result || '') });
+    reader.readAsText(file);
+  }
 
   return (
     <Tabs defaultActiveKey="1" items={[
@@ -174,6 +185,31 @@ export default function SubscriptionGeneralTab({ allSetting, updateSetting }: Su
                 placeholder={'GEOSITE,category-ir,DIRECT\nGEOIP,private,DIRECT'}
                 onChange={(e) => updateSetting({ subClashRules: e.target.value })}
               />
+            </SettingListItem>
+            <SettingListItem paddings="small" title="YAML 模板" description="导入 Clash/Mihomo YAML，保存时自动清理 proxies、proxy-providers 和 secret。">
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Space wrap>
+                  <Button icon={<UploadOutlined />} onClick={() => clashTemplateInputRef.current?.click()}>
+                    导入 YAML
+                  </Button>
+                  <Button danger icon={<DeleteOutlined />} disabled={!allSetting.subClashTemplate} onClick={() => updateSetting({ subClashTemplate: '' })}>
+                    清空模板
+                  </Button>
+                </Space>
+                <Input.TextArea
+                  value={allSetting.subClashTemplate}
+                  rows={12}
+                  placeholder="粘贴或导入 Clash/Mihomo YAML 模板"
+                  onChange={(e) => updateSetting({ subClashTemplate: e.target.value })}
+                />
+                <input
+                  ref={clashTemplateInputRef}
+                  type="file"
+                  accept=".yaml,.yml,text/yaml,text/plain"
+                  style={{ display: 'none' }}
+                  onChange={importClashTemplate}
+                />
+              </Space>
             </SettingListItem>
           </>
         ),
