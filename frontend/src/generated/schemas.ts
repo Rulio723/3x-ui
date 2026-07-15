@@ -157,7 +157,6 @@ export const SCHEMAS: Record<string, unknown> = {
         "type": "string"
       },
       "subClashTemplate": {
-        "description": "Clash/Mihomo YAML template",
         "type": "string"
       },
       "subClashURI": {
@@ -595,7 +594,6 @@ export const SCHEMAS: Record<string, unknown> = {
         "type": "string"
       },
       "subClashTemplate": {
-        "description": "Clash/Mihomo YAML template",
         "type": "string"
       },
       "subClashURI": {

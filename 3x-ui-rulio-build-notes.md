@@ -1,10 +1,10 @@
 # 3x-ui Rulio 定制与正式版编译记录
 
-记录时间：2026-07-08 22:42  
+记录时间：2026-07-15 23:38
 项目目录：`D:\Codex\3XUI`  
 目标系统：Debian 13 amd64  
-当前分支：`rulio-v3.4.2`  
-上游正式版基线：GitHub 3x-ui `v3.4.2`，本地基线提交 `f3a57d4c 3.4.2`
+当前分支：`rulio-v3.5.0-custom`
+上游正式版基线：GitHub 3x-ui `v3.5.0`，本地基线提交 `4e928a1c v3.5.0`
 
 ## 已添加的三个功能
 
@@ -26,7 +26,7 @@
 相关提交：
 
 ```text
-1bc1b91c feat: use Rulio clash subscription template
+33cfbf0b feat: use Rulio clash subscription template
 ```
 
 实现要点：
@@ -59,7 +59,7 @@ clash://install-config?url=<URL编码后的Clash订阅地址>&name=<URL编码后
 相关提交：
 
 ```text
-9f90f63e feat: add clash direct import buttons
+f714a6a6 feat: add clash direct import buttons
 ```
 
 改动摘要：
@@ -98,13 +98,19 @@ clash://install-config?url=<URL编码后的Clash订阅地址>&name=<URL编码后
 - `frontend/src/schemas/setting.ts`
 - `frontend/src/generated/*`
 
+相关提交：
+
+```text
+8f253f92 feat: add Clash YAML template import
+```
+
 ## 正式版编译说明
 
-这次编译的是 GitHub 正式版 `v3.4.2` 基线上的本地定制版，不是 dev 构建。
+这次编译的是 GitHub 正式版 `v3.5.0` 基线上的本地定制版，不是 dev 构建。
 
 关键点：
 
-- `internal/config/version` 仍为 `3.4.2`。
+- `internal/config/version` 仍为 `3.5.0`。
 - 不注入 `buildCommit`。
 - `go build` 的 `-ldflags` 只使用 `-s -w`。
 - 不使用类似下面这种 dev 注入参数：
@@ -116,7 +122,7 @@ clash://install-config?url=<URL编码后的Clash订阅地址>&name=<URL编码后
 原因：
 
 - 3x-ui 的版本逻辑会把注入了 `buildCommit` 的二进制显示成 `dev+<commit>`。
-- 正式版/本地稳定版需要保持 `buildCommit` 为空，这样 UI 显示 `v3.4.2`。
+- 正式版/本地稳定版需要保持 `buildCommit` 为空，这样 UI 显示 `v3.5.0`。
 
 ## 编译方式
 
@@ -196,13 +202,13 @@ D:\Codex\3XUI\outputs\x-ui
 文件大小：
 
 ```text
-101896568 bytes
+100884664 bytes
 ```
 
 SHA256：
 
 ```text
-C760036BAEBE0A33CE1A81107B451A6CABEB368E5F18C072662F9585AFE8D957
+C3668652994C2DD6D486A066524FAC3016A277D4943FAFF9E65B925511FDD02F
 ```
 
 ## 已执行验证
@@ -210,9 +216,9 @@ C760036BAEBE0A33CE1A81107B451A6CABEB368E5F18C072662F9585AFE8D957
 ```text
 npm run build
 npm run typecheck
-npx eslint src/pages/sub/SubPage.tsx
-npx eslint src/pages/settings/SubscriptionGeneralTab.tsx
-go test ./internal/clashtemplate ./internal/sub -run 'TestClean|TestBuildRulioClashConfig'
+npm run lint
+npm run test
+CGO_ENABLED=1 go test ./internal/clashtemplate ./internal/sub
 GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build
 ```
 
@@ -237,7 +243,7 @@ sudo systemctl status x-ui --no-pager
 或者打开面板确认 UI 显示为：
 
 ```text
-v3.4.2
+v3.5.0
 ```
 
 而不是：
@@ -251,7 +257,7 @@ dev+...
 如果新开 Codex 会话，可以直接贴这段：
 
 ```text
-项目在 D:\Codex\3XUI，分支 rulio-v3.4.2，基于 GitHub 3x-ui 正式版 v3.4.2，不要构建 dev 版本。
+项目在 D:\Codex\3XUI，分支 rulio-v3.5.0-custom，基于 GitHub 3x-ui 正式版 v3.5.0，不要构建 dev 版本。
 
 已有三个定制功能：
 1. internal/sub/rulio_clash_template.yaml 作为 Clash/Mihomo 订阅模板，internal/sub/clash_service.go 用 go:embed 读取并注入 proxies。
