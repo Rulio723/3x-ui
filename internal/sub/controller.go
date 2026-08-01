@@ -274,7 +274,7 @@ func NewSUBController(g *gin.RouterGroup, options ...SUBControllerOption) *SUBCo
 
 		subService:      sub,
 		subJsonService:  NewSubJsonService(config.subJsonMux, config.subJsonRules, config.subJsonFinalMask, sub),
-		subClashService: NewSubClashService(config.subClashEnableRouting, config.subClashRules, config.subClashTemplate, sub),
+		subClashService: NewSubClashServiceWithTemplate(config.subClashEnableRouting, config.subClashRules, config.subClashTemplate, sub),
 
 		subTemplateCache: map[string]*cachedSubTemplate{},
 	}

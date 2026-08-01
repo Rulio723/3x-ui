@@ -197,7 +197,6 @@
             "type": "string"
           },
           "subClashTemplate": {
-            "description": "Clash/Mihomo YAML template",
             "type": "string"
           },
           "subClashURI": {
@@ -673,7 +672,6 @@
             "type": "string"
           },
           "subClashTemplate": {
-            "description": "Clash/Mihomo YAML template",
             "type": "string"
           },
           "subClashURI": {

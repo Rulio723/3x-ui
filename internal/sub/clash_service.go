@@ -24,7 +24,11 @@ type SubClashService struct {
 	SubService    *SubService
 }
 
-func NewSubClashService(enableRouting bool, clashRules string, clashTemplate string, subService *SubService) *SubClashService {
+func NewSubClashService(enableRouting bool, clashRules string, subService *SubService) *SubClashService {
+	return NewSubClashServiceWithTemplate(enableRouting, clashRules, "", subService)
+}
+
+func NewSubClashServiceWithTemplate(enableRouting bool, clashRules string, clashTemplate string, subService *SubService) *SubClashService {
 	return &SubClashService{enableRouting: enableRouting, clashRules: clashRules, clashTemplate: clashTemplate, SubService: subService}
 }
 
