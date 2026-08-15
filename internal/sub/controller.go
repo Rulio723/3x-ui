@@ -1,12 +1,10 @@
 package sub
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
+	stdhtml "html"
 	"html/template"
-	"io/fs"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,6 +16,8 @@ import (
 	"unicode"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
 
 	"github.com/mhsanaei/3x-ui/v3/internal/logger"
 	"github.com/mhsanaei/3x-ui/v3/internal/web/service"
@@ -72,6 +72,7 @@ type SUBController struct {
 	subService      *SubService
 	subJsonService  *SubJsonService
 	subClashService *SubClashService
+	clientService   service.ClientService
 	settingService  service.SettingService
 
 	subTemplateMu    sync.RWMutex
@@ -295,23 +296,18 @@ func (a *SUBController) initRouter(g *gin.RouterGroup) {
 	}
 }
 
-// maybeServeSubPage renders the HTML info page when the request comes from a
-// browser (Accept: text/html) or explicitly asks for it (?html=1 or ?view=html).
-// It reports whether the request was handled. The remark template's per-client
-// info is for the content a client app imports — the raw subscription body. A
-// browser viewing the HTML info page gets clean, name-only remarks (usage is
-// shown in the page summary).
+// maybeServeSubPage validates the subscription and renders a copy-only page.
+// The full page embeds share links and must never handle browser navigation.
 func (a *SUBController) maybeServeSubPage(c *gin.Context) bool {
-	accept := c.GetHeader("Accept")
-	wantsHTML := strings.Contains(strings.ToLower(accept), "text/html") || c.Query("html") == "1" || strings.EqualFold(c.Query("view"), "html")
-	if !wantsHTML {
+	explicit := explicitSubPageRequest(c)
+	if !explicit && !a.isBrowserSubscriptionRequest(c) {
 		return false
 	}
-	page, ok := a.buildSubPageData(c)
+	_, ok := a.buildSubPageData(c)
 	if !ok {
 		return true
 	}
-	a.serveSubPage(c, page.BasePath, page)
+	a.serveSubscriptionCopyPage(c)
 	return true
 }
 
@@ -353,7 +349,9 @@ func (a *SUBController) buildSubPageData(c *gin.Context) (PageData, bool) {
 		basePath = "/"
 	}
 	basePathStr := basePath.(string)
-	page := subReq.BuildPageData(subId, hostHeader, traffic, lastOnline, subs, emails, subURL, subJsonURL, subClashURL, basePathStr, a.subTitle, a.subSupportUrl)
+	metadata := a.metadataForSubRequest(func() *SubService { return subReq }, subId, "")
+	page := subReq.BuildPageData(subId, hostHeader, traffic, lastOnline, subs, emails, subURL, subJsonURL, subClashURL, basePathStr, metadata.Title, metadata.SupportURL)
+	page.SubAnnounce = metadata.Announce
 	return page, true
 }
 
@@ -384,11 +382,16 @@ func (a *SUBController) subs(c *gin.Context) {
 		logSubscriptionRoute(userAgent, "html")
 		return
 	}
+	if !a.enforceHwid(c) {
+		return
+	}
 	if shouldAutoServeClash(a.subClashAutoDetect, a.clashEnabled, false, userAgent, a.clashUserAgent) && a.serveClashBody(c, false) {
+		a.recordSubscriptionFetch(c)
 		logSubscriptionRoute(userAgent, "clash")
 		return
 	}
 	if shouldAutoServeJson(a.jsonAutoDetect, a.jsonEnabled, false, userAgent, a.jsonUserAgent) && a.serveJsonBody(c, true, "application/json; charset=utf-8", false) {
+		a.recordSubscriptionFetch(c)
 		logSubscriptionRoute(userAgent, "json")
 		return
 	}
@@ -409,11 +412,9 @@ func (a *SUBController) subs(c *gin.Context) {
 
 		// Add headers
 		header := fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%d", traffic.Up, traffic.Down, traffic.Total, traffic.ExpiryTime/1000)
-		profileUrl := a.subProfileUrl
-		if profileUrl == "" {
-			profileUrl = fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
-		}
-		a.ApplyCommonHeaders(c, header, a.updateInterval, a.subTitle, a.subSupportUrl, profileUrl, a.subAnnounce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
+		profileURL := fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
+		metadata := a.metadataForSubRequest(func() *SubService { return subReq }, subId, profileURL)
+		a.ApplyCommonHeaders(c, header, a.updateInterval, metadata.Title, metadata.SupportURL, metadata.ProfileURL, metadata.Announce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
 
 		if a.subIncyEnableRouting && a.subIncyRoutingRules != "" {
 			result.WriteString(a.subIncyRoutingRules)
@@ -425,6 +426,16 @@ func (a *SUBController) subs(c *gin.Context) {
 		} else {
 			c.String(200, result.String())
 		}
+		a.recordSubscriptionFetch(c)
+	}
+}
+
+func (a *SUBController) recordSubscriptionFetch(c *gin.Context) {
+	if c.Request == nil || c.Request.Method != http.MethodGet || c.Writer.Status() != http.StatusOK {
+		return
+	}
+	if err := a.subService.RecordSubscriptionFetch(c.Param("subid")); err != nil {
+		logger.Warning("Failed to record subscription fetch:", err)
 	}
 }
 
@@ -480,80 +491,108 @@ func compileUserAgentRegex(name, pattern, defaultPattern string) *regexp.Regexp 
 	return regexp.MustCompile(defaultPattern)
 }
 
-// serveSubPage renders internal/web/dist/subpage.html for the current subscription
-// request. The Vite-built SPA reads window.__SUB_PAGE_DATA__ on mount —
-// we inject that here, along with window.X_UI_BASE_PATH so the
-// page's static asset references resolve correctly when the panel runs
-// behind a URL prefix.
-func (a *SUBController) serveSubPage(c *gin.Context, basePath string, page PageData) {
-	var body []byte
-	if diskBody, diskErr := os.ReadFile("internal/web/dist/subpage.html"); diskErr == nil {
-		body = diskBody
-	} else {
-		readBody, err := fs.ReadFile(distFS, "dist/subpage.html")
-		if err != nil {
-			c.String(http.StatusInternalServerError, "missing embedded subpage")
-			return
+// explicitSubPageRequest reports whether the caller explicitly asked for HTML.
+func explicitSubPageRequest(c *gin.Context) bool {
+	return c.Query("html") == "1" || strings.EqualFold(c.Query("view"), "html")
+}
+
+func (a *SUBController) isBrowserSubscriptionRequest(c *gin.Context) bool {
+	accept := strings.ToLower(c.GetHeader("Accept"))
+	if strings.Contains(accept, "text/html") {
+		return true
+	}
+
+	fetchDest := strings.ToLower(c.GetHeader("Sec-Fetch-Dest"))
+	fetchMode := strings.ToLower(c.GetHeader("Sec-Fetch-Mode"))
+	if fetchDest == "document" || fetchMode == "navigate" {
+		return true
+	}
+
+	rawUA := c.GetHeader("User-Agent")
+	ua := strings.ToLower(rawUA)
+	if rawUA == "" {
+		return false
+	}
+	if shouldAutoServeClash(a.subClashAutoDetect, a.clashEnabled, false, rawUA, a.clashUserAgent) ||
+		shouldAutoServeJson(a.jsonAutoDetect, a.jsonEnabled, false, rawUA, a.jsonUserAgent) {
+		return false
+	}
+	if strings.Contains(ua, "mozilla/") {
+		vpnClients := []string{
+			"clash", "mihomo", "sing-box", "v2ray", "xray", "hiddify",
+			"nekobox", "shadowrocket", "streisand", "v2box", "incy", "happ",
 		}
-		body = readBody
+		for _, client := range vpnClients {
+			if strings.Contains(ua, client) {
+				return false
+			}
+		}
+		return true
 	}
+	return false
+}
 
-	// Vite emits absolute asset URLs (`/assets/...`); when the panel is
-	// installed under a custom URL prefix, rewrite them so the bundle
-	// loads from `<basePath>assets/...` where the static handler is
-	// actually mounted.
-	if basePath != "/" && basePath != "" {
-		body = bytes.ReplaceAll(body, []byte(`src="/assets/`), []byte(`src="`+basePath+`assets/`))
-		body = bytes.ReplaceAll(body, []byte(`href="/assets/`), []byte(`href="`+basePath+`assets/`))
-	}
+func (a *SUBController) serveSubscriptionCopyPage(c *gin.Context) {
+	setNoCacheHeaders(c)
+	title := localizeRequest(c, "subCopyPageTitle")
+	heading := localizeRequest(c, "subCopyPageHeading")
+	instructions := localizeRequest(c, "subCopyPageInstructions")
+	lang := requestLanguage(c)
+	page := `<!doctype html>
+<html lang="{{LANG}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>{{TITLE}}</title>
+  <style>
+		* { box-sizing: border-box; }
+		html { min-height: 100%; background: #050505; }
+		body { margin: 0; width: 100%; min-height: 100vh; min-height: 100dvh; padding: 24px; overflow-x: hidden; display: grid; place-items: center; background: #050505; color: #f2f2f2; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-align: center; }
+		main { width: 100%; max-width: 520px; min-width: 0; padding: 32px; overflow-wrap: anywhere; }
+    h1 { margin: 0 0 14px; font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
+    p { margin: 0; color: #b8b8b8; font-size: 16px; line-height: 1.55; }
+		@media (max-width: 480px) { body { padding: 16px; } main { padding: 24px 8px; } }
+  </style>
+</head>
+<body>
+	<main dir="auto">
+    <h1>{{HEADING}}</h1>
+    <p>{{INSTRUCTIONS}}</p>
+  </main>
+</body>
+</html>`
+	page = strings.NewReplacer(
+		"{{LANG}}", stdhtml.EscapeString(lang),
+		"{{TITLE}}", stdhtml.EscapeString(title),
+		"{{HEADING}}", stdhtml.EscapeString(heading),
+		"{{INSTRUCTIONS}}", stdhtml.EscapeString(instructions),
+	).Replace(page)
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(page))
+}
 
-	subData := a.subPageContext(page)
-
-	// When an admin has configured a custom subscription theme, render it
-	// instead of the default SPA. We render into a buffer first so a template
-	// that fails mid-execution can't leave a partially-written (corrupt)
-	// response — on any error we log and fall through to the default page.
-	if themeDir, _ := a.settingService.GetSubThemeDir(); themeDir != "" {
-		if tmpl, err := a.loadSubTemplate(themeDir); err != nil {
-			logger.Error("sub: custom template parse failed, using default page:", err)
-		} else if tmpl == nil {
-			logger.Warning("sub: subThemeDir set but no usable template found, using default page:", themeDir)
-		} else {
-			var buf bytes.Buffer
-			if execErr := tmpl.Execute(&buf, subData); execErr != nil {
-				logger.Error("sub: custom template execution failed, using default page:", execErr)
-			} else {
-				setNoCacheHeaders(c)
-				c.Data(http.StatusOK, "text/html; charset=utf-8", buf.Bytes())
-				return
+func localizeRequest(c *gin.Context, key string) string {
+	if value, ok := c.Get("localizer"); ok {
+		if localizer, ok := value.(*i18n.Localizer); ok {
+			if msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: key}); err == nil {
+				return msg
 			}
 		}
 	}
-
-	subDataJSON, err := json.Marshal(subData)
-	if err != nil {
-		subDataJSON = []byte("{}")
+	fallbacks := map[string]string{
+		"subCopyPageTitle":        "Subscription link",
+		"subCopyPageHeading":      "This is a subscription link",
+		"subCopyPageInstructions": "You do not need to open it in a browser. Copy this page address and paste it into the app.",
 	}
+	return fallbacks[key]
+}
 
-	// Defense-in-depth string-escape for the basePath embed — admin-
-	// controlled but cheap to harden.
-	jsEscape := strings.NewReplacer(
-		`\`, `\\`,
-		`"`, `\"`,
-		"\n", `\n`,
-		"\r", `\r`,
-		"<", `<`,
-		">", `>`,
-		"&", `&`,
-	)
-	escapedBase := jsEscape.Replace(basePath)
-
-	inject := []byte(`<script>window.X_UI_BASE_PATH="` + escapedBase + `";` +
-		`window.__SUB_PAGE_DATA__=` + string(subDataJSON) + `;</script></head>`)
-	out := bytes.Replace(body, []byte("</head>"), inject, 1)
-
-	setNoCacheHeaders(c)
-	c.Data(http.StatusOK, "text/html; charset=utf-8", out)
+func requestLanguage(c *gin.Context) string {
+	tag, _, _ := language.ParseAcceptLanguage(c.GetHeader("Accept-Language"))
+	if len(tag) == 0 {
+		return "en-US"
+	}
+	return tag[0].String()
 }
 
 // subPageContext builds the shared view-model map: the template context for
@@ -589,7 +628,42 @@ func (a *SUBController) subPageContext(page PageData) map[string]any {
 		"links":         page.Result,
 		"emails":        page.Emails,
 		"datepicker":    datepicker,
-		"announce":      a.subAnnounce,
+		"announce":      page.SubAnnounce,
+	}
+}
+
+func (a *SUBController) enforceHwid(c *gin.Context) bool {
+	result, err := a.clientService.EnforceHwidForSubID(c.Param("subid"), service.HwidRequest{
+		Hwid:        c.GetHeader("X-HWID"),
+		UserAgent:   c.GetHeader("User-Agent"),
+		DeviceOS:    c.GetHeader("X-Device-OS"),
+		OsVersion:   c.GetHeader("X-Ver-OS"),
+		DeviceModel: c.GetHeader("X-Device-Model"),
+	})
+	if err != nil {
+		writeSubError(c, err)
+		return false
+	}
+	applyHwidHeaders(c, result)
+	if !result.Allowed {
+		c.Status(http.StatusNotFound)
+		return false
+	}
+	return true
+}
+
+func applyHwidHeaders(c *gin.Context, result service.HwidGateResult) {
+	if result.Active {
+		c.Header("X-Hwid-Active", "true")
+	}
+	if result.NotSupported {
+		c.Header("X-Hwid-Not-Supported", "true")
+	}
+	if result.LimitReached {
+		c.Header("X-Hwid-Limit", "true")
+	}
+	if result.MaxDevicesReached {
+		c.Header("X-Hwid-Max-Devices-Reached", "true")
 	}
 }
 
@@ -650,9 +724,13 @@ func (a *SUBController) subJsons(c *gin.Context) {
 		if !a.serveJsonBody(c, a.jsonAlwaysArray, "application/json; charset=utf-8", true) {
 			writeSubError(c, nil)
 		}
+		a.recordSubscriptionFetch(c)
 		return
 	}
 	if a.maybeServeSubPage(c) {
+		return
+	}
+	if !a.enforceHwid(c) {
 		return
 	}
 	a.serveJson(c, a.jsonAlwaysArray, "text/plain; charset=utf-8")
@@ -662,6 +740,7 @@ func (a *SUBController) serveJson(c *gin.Context, alwaysReturnArray bool, conten
 	if !a.serveJsonBody(c, alwaysReturnArray, contentType, false) {
 		writeSubError(c, nil)
 	}
+	a.recordSubscriptionFetch(c)
 }
 
 func (a *SUBController) serveJsonBody(c *gin.Context, alwaysReturnArray bool, contentType string, rawDownload bool) bool {
@@ -675,11 +754,15 @@ func (a *SUBController) serveJsonBody(c *gin.Context, alwaysReturnArray bool, co
 	if len(jsonSub) == 0 {
 		return false
 	}
-	profileUrl := a.subProfileUrl
-	if profileUrl == "" {
-		profileUrl = fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
-	}
-	a.ApplyCommonHeaders(c, header, a.updateInterval, a.subTitle, a.subSupportUrl, profileUrl, a.subAnnounce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
+	profileURL := fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
+	var subReq *SubService
+	metadata := a.metadataForSubRequest(func() *SubService {
+		if subReq == nil {
+			subReq = a.subService.ForRequest(host)
+		}
+		return subReq
+	}, subId, profileURL)
+	a.ApplyCommonHeaders(c, header, a.updateInterval, metadata.Title, metadata.SupportURL, metadata.ProfileURL, metadata.Announce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
 	if rawDownload {
 		c.Writer.Header().Set("Content-Disposition", `attachment; filename="subscription.json"`)
 	}
@@ -693,14 +776,19 @@ func (a *SUBController) subClashs(c *gin.Context) {
 		if !a.serveClashBody(c, true) {
 			writeSubError(c, nil)
 		}
+		a.recordSubscriptionFetch(c)
 		return
 	}
 	if a.maybeServeSubPage(c) {
 		return
 	}
+	if !a.enforceHwid(c) {
+		return
+	}
 	if !a.serveClashBody(c, false) {
 		writeSubError(c, nil)
 	}
+	a.recordSubscriptionFetch(c)
 }
 
 func (a *SUBController) serveClashBody(c *gin.Context, rawDownload bool) bool {
@@ -714,16 +802,20 @@ func (a *SUBController) serveClashBody(c *gin.Context, rawDownload bool) bool {
 	if len(clashSub) == 0 {
 		return false
 	}
-	profileUrl := a.subProfileUrl
-	if profileUrl == "" {
-		profileUrl = fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
-	}
-	a.ApplyCommonHeaders(c, header, a.updateInterval, a.subTitle, a.subSupportUrl, profileUrl, a.subAnnounce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
+	profileURL := fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
+	var subReq *SubService
+	metadata := a.metadataForSubRequest(func() *SubService {
+		if subReq == nil {
+			subReq = a.subService.ForRequest(host)
+		}
+		return subReq
+	}, subId, profileURL)
+	a.ApplyCommonHeaders(c, header, a.updateInterval, metadata.Title, metadata.SupportURL, metadata.ProfileURL, metadata.Announce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
 	if rawDownload {
 		c.Writer.Header().Set("Content-Disposition", `attachment; filename="subscription.yaml"`)
-	} else if a.subTitle != "" {
+	} else if metadata.Title != "" {
 		// Clash clients commonly use Content-Disposition to choose the imported profile name.
-		c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename*=UTF-8''%s`, url.PathEscape(a.subTitle)))
+		c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename*=UTF-8''%s`, url.PathEscape(metadata.Title)))
 	}
 	c.Data(200, "application/yaml; charset=utf-8", []byte(clashSub))
 	return true
