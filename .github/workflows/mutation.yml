@@ -5,8 +5,8 @@ name: Mutation testing
 # runs nightly / on demand and scoped per package — never per-commit. It is informational:
 # no thresholds are set, so it reports survivors as artifacts without failing the build.
 on:
-  schedule:
-    - cron: "0 3 * * *" # 03:00 UTC daily
+  # Kept for optional manual diagnostics. The upstream nightly test currently
+  # fails before mutation analysis because its Telegram test token is rejected.
   workflow_dispatch:
 
 permissions:
