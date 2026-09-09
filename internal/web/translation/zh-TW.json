@@ -1394,7 +1394,7 @@
       "smtpErrorTimeout": "連線逾時 — 無法連線至主機",
       "smtpErrorRelay": "伺服器拒絕從此地址傳送",
       "smtpErrorEof": "連線已被伺服器關閉",
-      "smtpErrorUnknown": "SMTP 錯誤：{{ .Error }}",
+      "smtpErrorUnknown": "SMTP 錯誤 — 詳情見面板日誌",
       "eventMemoryHigh": "記憶體使用率高 (%)",
       "remarkTemplate": "備註範本",
       "remarkTemplateDesc": "設定後，這將取代每個訂閱連結的備註模型——使用變數標記撰寫您自己的格式（使用按鈕來插入）。留空則使用上方的模型。",

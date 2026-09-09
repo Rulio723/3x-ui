@@ -1394,7 +1394,7 @@
       "smtpErrorTimeout": "Tempo de conexão esgotado — host inacessível",
       "smtpErrorRelay": "O servidor rejeita o envio a partir deste endereço",
       "smtpErrorEof": "Conexão encerrada pelo servidor",
-      "smtpErrorUnknown": "Erro de SMTP: {{ .Error }}",
+      "smtpErrorUnknown": "Erro de SMTP — consulte o log do painel",
       "eventMemoryHigh": "Uso de memória alto (%)",
       "remarkTemplate": "Modelo de Observação",
       "remarkTemplateDesc": "Quando definido, isto substitui o modelo de observação de cada link de assinatura — escreva seu próprio formato com os tokens de variáveis (use o botão para inseri-los). Deixe vazio para usar o modelo acima.",

@@ -1516,7 +1516,7 @@
       "smtpErrorTimeout": "Connection timeout — host unreachable",
       "smtpErrorRelay": "Server rejects sending from this address",
       "smtpErrorEof": "Connection closed by server",
-      "smtpErrorUnknown": "SMTP error: {{ .Error }}",
+      "smtpErrorUnknown": "SMTP error — see the panel log for details",
       "eventMemoryHigh": "Memory high (%)",
       "validation": {
         "pathLeadingSlash": "Path must start with /"

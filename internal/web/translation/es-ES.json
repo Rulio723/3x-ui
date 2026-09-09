@@ -1394,7 +1394,7 @@
       "smtpErrorTimeout": "Tiempo de conexión agotado: servidor inaccesible",
       "smtpErrorRelay": "El servidor rechaza el envío desde esta dirección",
       "smtpErrorEof": "Conexión cerrada por el servidor",
-      "smtpErrorUnknown": "Error de SMTP: {{ .Error }}",
+      "smtpErrorUnknown": "Error de SMTP — consulta el registro del panel",
       "eventMemoryHigh": "Uso de memoria alto (%)",
       "remarkTemplate": "Plantilla de notas",
       "remarkTemplateDesc": "Cuando se define, esto reemplaza el modelo de notas para cada enlace de suscripción — escribe tu propio formato con los tokens de variable (usa el botón para insertarlos). Déjalo vacío para usar el modelo anterior.",

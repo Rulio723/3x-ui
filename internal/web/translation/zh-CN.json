@@ -1394,7 +1394,7 @@
       "smtpErrorTimeout": "连接超时——主机无法访问",
       "smtpErrorRelay": "服务器拒绝从此地址发送",
       "smtpErrorEof": "连接被服务器关闭",
-      "smtpErrorUnknown": "SMTP 错误：{{ .Error }}",
+      "smtpErrorUnknown": "SMTP 错误 — 详情见面板日志",
       "eventMemoryHigh": "内存使用率高 (%)",
       "remarkTemplate": "备注模板",
       "remarkTemplateDesc": "设置后，将替换每个订阅链接的备注模型 — 使用变量标记编写您自己的格式（用按钮插入它们）。留空则使用上方的模型。",

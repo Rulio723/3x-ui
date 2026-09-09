@@ -1394,7 +1394,7 @@
       "smtpErrorTimeout": "Bağlantı zaman aşımına uğradı — sunucuya ulaşılamıyor",
       "smtpErrorRelay": "Sunucu bu adresten gönderimi reddediyor",
       "smtpErrorEof": "Bağlantı sunucu tarafından kapatıldı",
-      "smtpErrorUnknown": "SMTP hatası: {{ .Error }}",
+      "smtpErrorUnknown": "SMTP hatası — ayrıntılar için panel günlüğüne bakın",
       "eventMemoryHigh": "Bellek kullanımı yüksek (%)",
       "remarkTemplate": "Açıklama Şablonu",
       "remarkTemplateDesc": "Ayarlandığında, her abonelik bağlantısının açıklama modelinin yerini alır — değişken belirteçleriyle kendi formatınızı yazın (eklemek için düğmeyi kullanın). Yukarıdaki modeli kullanmak için boş bırakın.",

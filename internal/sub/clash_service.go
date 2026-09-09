@@ -234,7 +234,10 @@ func (s *SubClashService) getProxies(subReq *SubService, inbound *model.Inbound,
 		// the synthetic/legacy entry) before it becomes the proxy name.
 		subReq.renderHostRemark(inbound, client, extPrxy, network)
 		workingInbound := *inbound
-		workingInbound.Listen, _ = extPrxy["dest"].(string)
+		// A Clash "server" is a bare host, not a URI authority, and the custom
+		// share address stores IPv6 literals bracketed.
+		dest, _ := extPrxy["dest"].(string)
+		workingInbound.Listen = strings.Trim(dest, "[]")
 		if port, ok := extPrxy["port"].(float64); ok {
 			workingInbound.Port = int(port)
 		}

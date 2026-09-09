@@ -1394,7 +1394,7 @@
       "smtpErrorTimeout": "Koneksi waktu habis — host tidak dapat dijangkau",
       "smtpErrorRelay": "Server menolak pengiriman dari alamat ini",
       "smtpErrorEof": "Koneksi ditutup oleh server",
-      "smtpErrorUnknown": "Kesalahan SMTP: {{ .Error }}",
+      "smtpErrorUnknown": "Kesalahan SMTP — lihat log panel",
       "eventMemoryHigh": "Penggunaan memori tinggi (%)",
       "remarkTemplate": "Templat Catatan",
       "remarkTemplateDesc": "Jika diatur, ini menggantikan model catatan untuk setiap tautan langganan — tulis format Anda sendiri dengan token variabel (gunakan tombol untuk menyisipkannya). Biarkan kosong untuk memakai model di atas.",
