@@ -776,8 +776,8 @@ func (s *SubService) genWireguardLink(inbound *model.Inbound, email string) stri
 	if client.PreSharedKey != "" {
 		params["presharedkey"] = client.PreSharedKey
 	}
-	if client.KeepAlive > 0 {
-		params["keepalive"] = strconv.Itoa(client.KeepAlive)
+	if ka := client.KeepAliveSeconds(); ka > 0 {
+		params["keepalive"] = strconv.Itoa(ka)
 	}
 	return buildLinkWithParams(link, params, s.genRemark(inbound, email, "", ""))
 }
@@ -878,8 +878,8 @@ func amneziaWGConfigText(server *amneziawg.ServerSettings, client *model.Client,
 	}
 	b.WriteString("AllowedIPs = 0.0.0.0/0, ::/0\n")
 	fmt.Fprintf(&b, "Endpoint = %s:%d", host, port)
-	if client.KeepAlive > 0 {
-		fmt.Fprintf(&b, "\nPersistentKeepalive = %d", client.KeepAlive)
+	if ka := client.KeepAliveSeconds(); ka > 0 {
+		fmt.Fprintf(&b, "\nPersistentKeepalive = %d", ka)
 	}
 
 	return b.String()
@@ -2166,8 +2166,7 @@ func appendQueryAndFragment(link string, params map[string]string, fragment, sec
 
 	if fragment != "" {
 		sb.WriteByte('#')
-		// Match the frontend's encodeURIComponent(remark): spaces become
-		// %20 (not + as in query strings).
+		// Match the frontend's encodeURIComponent(remark): spaces become %20.
 		sb.WriteString(strings.ReplaceAll(url.QueryEscape(fragment), "+", "%20"))
 	}
 	return sb.String()
