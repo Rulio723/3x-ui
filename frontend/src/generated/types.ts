@@ -3,16 +3,26 @@ export type GeoKind = string;
 export type OnlineAPISupport = number;
 export type ProcessState = string;
 export type Protocol = string;
-export type SubLinkProvider = unknown;
 export type staticEgressResolver = string;
 export type trafficLocalApplyAction = number;
 export type transportBits = number;
 
 export interface AllSetting {
   datepicker: string;
+  discordAdminIds: string;
+  discordBotBackup: boolean;
+  discordBotEnable: boolean;
+  discordBotToken: string;
+  discordChannelId: string;
+  discordCpu: number;
+  discordEnabledEvents: string;
+  discordLang: string;
+  discordMemory: number;
+  discordRunTime: string;
   expireDiff: number;
   externalTrafficInformEnable: boolean;
   externalTrafficInformURI: string;
+  happLinkEnable: boolean;
   ipLimitAllowlist: string;
   ldapAutoCreate: boolean;
   ldapAutoDelete: boolean;
@@ -96,6 +106,7 @@ export interface AllSetting {
   subInfoNodeEnable: boolean;
   subJsonAlwaysArray: boolean;
   subJsonAutoDetect: boolean;
+  subJsonDns: string;
   subJsonEnable: boolean;
   subJsonFinalMask: string;
   subJsonMux: string;
@@ -145,10 +156,22 @@ export interface AllSetting {
 
 export interface AllSettingView {
   datepicker: string;
+  discordAdminIds: string;
+  discordBotBackup: boolean;
+  discordBotEnable: boolean;
+  discordBotToken: string;
+  discordChannelId: string;
+  discordCpu: number;
+  discordEnabledEvents: string;
+  discordLang: string;
+  discordMemory: number;
+  discordRunTime: string;
   expireDiff: number;
   externalTrafficInformEnable: boolean;
   externalTrafficInformURI: string;
+  happLinkEnable: boolean;
   hasApiToken: boolean;
+  hasDiscordBotToken: boolean;
   hasLdapPassword: boolean;
   hasNordSecret: boolean;
   hasSmtpPassword: boolean;
@@ -238,6 +261,7 @@ export interface AllSettingView {
   subInfoNodeEnable: boolean;
   subJsonAlwaysArray: boolean;
   subJsonAutoDetect: boolean;
+  subJsonDns: string;
   subJsonEnable: boolean;
   subJsonFinalMask: string;
   subJsonMux: string;
@@ -492,6 +516,10 @@ export interface GeodataTokenIssue {
   file?: string;
   reason: string;
   token: string;
+}
+
+export interface HappLinkResult {
+  encryptedLink: string;
 }
 
 export interface HistoryOfSeeders {

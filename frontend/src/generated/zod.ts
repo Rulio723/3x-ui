@@ -12,9 +12,6 @@ export type ProcessState = z.infer<typeof ProcessStateSchema>;
 export const ProtocolSchema = z.string();
 export type Protocol = z.infer<typeof ProtocolSchema>;
 
-export const SubLinkProviderSchema = z.unknown();
-export type SubLinkProvider = z.infer<typeof SubLinkProviderSchema>;
-
 export const staticEgressResolverSchema = z.string();
 export type staticEgressResolver = z.infer<typeof staticEgressResolverSchema>;
 
@@ -26,9 +23,20 @@ export type transportBits = z.infer<typeof transportBitsSchema>;
 
 export const AllSettingSchema = z.object({
   datepicker: z.string(),
+  discordAdminIds: z.string(),
+  discordBotBackup: z.boolean(),
+  discordBotEnable: z.boolean(),
+  discordBotToken: z.string(),
+  discordChannelId: z.string(),
+  discordCpu: z.number().int().min(0).max(100),
+  discordEnabledEvents: z.string(),
+  discordLang: z.string(),
+  discordMemory: z.number().int().min(0).max(100),
+  discordRunTime: z.string(),
   expireDiff: z.number().int().min(0),
   externalTrafficInformEnable: z.boolean(),
   externalTrafficInformURI: z.string(),
+  happLinkEnable: z.boolean(),
   ipLimitAllowlist: z.string(),
   ldapAutoCreate: z.boolean(),
   ldapAutoDelete: z.boolean(),
@@ -112,6 +120,7 @@ export const AllSettingSchema = z.object({
   subInfoNodeEnable: z.boolean(),
   subJsonAlwaysArray: z.boolean(),
   subJsonAutoDetect: z.boolean(),
+  subJsonDns: z.string(),
   subJsonEnable: z.boolean(),
   subJsonFinalMask: z.string(),
   subJsonMux: z.string(),
@@ -162,10 +171,22 @@ export type AllSetting = z.infer<typeof AllSettingSchema>;
 
 export const AllSettingViewSchema = z.object({
   datepicker: z.string(),
+  discordAdminIds: z.string(),
+  discordBotBackup: z.boolean(),
+  discordBotEnable: z.boolean(),
+  discordBotToken: z.string(),
+  discordChannelId: z.string(),
+  discordCpu: z.number().int().min(0).max(100),
+  discordEnabledEvents: z.string(),
+  discordLang: z.string(),
+  discordMemory: z.number().int().min(0).max(100),
+  discordRunTime: z.string(),
   expireDiff: z.number().int().min(0),
   externalTrafficInformEnable: z.boolean(),
   externalTrafficInformURI: z.string(),
+  happLinkEnable: z.boolean(),
   hasApiToken: z.boolean(),
+  hasDiscordBotToken: z.boolean(),
   hasLdapPassword: z.boolean(),
   hasNordSecret: z.boolean(),
   hasSmtpPassword: z.boolean(),
@@ -255,6 +276,7 @@ export const AllSettingViewSchema = z.object({
   subInfoNodeEnable: z.boolean(),
   subJsonAlwaysArray: z.boolean(),
   subJsonAutoDetect: z.boolean(),
+  subJsonDns: z.string(),
   subJsonEnable: z.boolean(),
   subJsonFinalMask: z.string(),
   subJsonMux: z.string(),
@@ -529,6 +551,11 @@ export const GeodataTokenIssueSchema = z.object({
   token: z.string(),
 });
 export type GeodataTokenIssue = z.infer<typeof GeodataTokenIssueSchema>;
+
+export const HappLinkResultSchema = z.object({
+  encryptedLink: z.string(),
+});
+export type HappLinkResult = z.infer<typeof HappLinkResultSchema>;
 
 export const HistoryOfSeedersSchema = z.object({
   id: z.number().int(),
