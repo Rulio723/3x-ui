@@ -80,7 +80,6 @@
   "somethingWentWrong": "發生錯誤",
   "subscription": {
     "title": "訂閱資訊",
-    "subId": "訂閱 ID",
     "status": "狀態",
     "downloaded": "已下載",
     "uploaded": "已上傳",
@@ -93,7 +92,20 @@
     "noExpiry": "無到期",
     "copyAllConfigs": "複製全部配置",
     "copyAllConfigsCopied": "已複製全部配置",
-    "email": "電子郵件"
+    "daysLeft": "剩餘天數",
+    "expired": "已過期",
+    "depleted": "流量已用完",
+    "ofTotal": "共 {total}",
+    "tabLinks": "訂閱",
+    "tabApps": "應用程式",
+    "tabConfigs": "設定檔",
+    "scanTitle": "用手機掃描",
+    "scanHint": "在 VPN 應用程式中掃描此 QR 碼，無需複製連結即可新增訂閱。",
+    "updateInterval": "每 {hours} 小時自動更新",
+    "support": "支援",
+    "qrTitle": "掃描。匯入。連線。",
+    "qrHint": "使用用戶端應用程式掃描。請勿外洩此 QR 碼。",
+    "saveQr": "儲存 QR 碼"
   },
   "menu": {
     "theme": "主題",
@@ -584,7 +596,7 @@
         "customSockopt": "自訂 sockopt",
         "addCustomOption": "新增自訂選項",
         "serverNameIndication": "SNI",
-        "cipherSuites": "Cipher Suites",
+        "cipherSuites": "加密套件",
         "autoOption": "自動",
         "minMaxVersion": "最小/最大版本",
         "rejectUnknownSni": "拒絕未知 SNI",
@@ -2421,7 +2433,8 @@
       "disableSuccess": "✅ {{ .Email }}：已成功禁用。",
       "askToAddUserId": "未找到您的配置！\r\n請向管理員詢問，在您的配置中使用您的 Telegram 使用者 ChatID。\r\n\r\n您的使用者 ChatID：<code>{{ .TgUserID }}</code>",
       "chooseClient": "為入站 {{ .Inbound }} 選擇一個客戶",
-      "chooseInbound": "選擇一個入站"
+      "chooseInbound": "選擇一個入站",
+      "qrCodeForClient": "客戶端 {{ .Email }} 的二維碼："
     }
   },
   "discord": {
