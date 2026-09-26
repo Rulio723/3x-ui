@@ -243,6 +243,12 @@ For deeper notes on the frontend toolchain see [`frontend/README.md`](frontend/R
 
 Tests live next to the code (`foo.go` ↔ `foo_test.go`); frontend specs and golden fixtures live in `frontend/src/test/`.
 
+### Test first, and only tests that can fail
+
+- **Red → green → refactor.** Write the test before the code. For a bug, the test reproduces the report; for a feature, it covers the first behaviour. Watch it fail, write the code that makes it pass, then refactor with the suite green.
+- **Every test catches a named failure.** Don't test getters, constants or renames. Don't restate the implementation, mock the unit under test, write assertions too weak to fail, or regenerate snapshots to match whatever the code now outputs.
+- **Fix the root cause the right way**, even when that takes more code. A small patch that hides the symptom is not a fix.
+
 ### Go conventions
 
 - **Stdlib `testing` only** — no testify. Table-driven with `t.Run` subtests and `t.Helper()` on helpers.
