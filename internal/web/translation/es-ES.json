@@ -694,7 +694,35 @@
           "listen": "Dirección de escucha del inbound",
           "custom": "Personalizada"
         },
-        "autoFill": "Autocompletar"
+        "autoFill": "Autocompletar",
+        "xdrive": {
+          "service": "Servicio de almacenamiento",
+          "serviceLocal": "Carpeta local",
+          "serviceTemplate": "Plantilla personalizada",
+          "remoteFolder": "Carpeta remota",
+          "clientId": "Client ID",
+          "clientSecret": "Client Secret",
+          "refreshToken": "Refresh Token",
+          "secrets": "Secretos",
+          "secretsDesc": "Valores que la plantilla lee como {secret0}, {secret1}, …",
+          "template": "Plantilla de almacenamiento",
+          "templateInvalid": "Debe ser un objeto JSON",
+          "front": "Dirección de fronting",
+          "frontDesc": "Host o IP opcional a través del cual se conecta a la API de almacenamiento (domain fronting).",
+          "frontPort": "Puerto de fronting",
+          "segmentBytes": "Tamaño de segmento (bytes)",
+          "flushInterval": "Intervalo de envío (ms)",
+          "pollInterval": "Intervalo de sondeo (ms)",
+          "maxPollInterval": "Intervalo máximo de sondeo (ms)",
+          "eagerWindow": "Ventana anticipada (ms)",
+          "holeTimeout": "Tiempo de espera de segmento perdido (ms)",
+          "sessionTtl": "TTL de sesión (s)",
+          "concurrency": "Concurrencia"
+        },
+        "masque": {
+          "addressPool": "Pool de direcciones",
+          "addressPoolDesc": "Las direcciones del túnel se asignan de estos prefijos: como máximo uno IPv4 y uno IPv6."
+        }
       },
       "info": {
         "mode": "Modo",
@@ -789,7 +817,7 @@
       "limitIpFail2banWindows": "Fail2ban no está disponible en Windows, por lo que no se puede aplicar el límite de IP.",
       "limitIpDisabled": "La función de límite de IP está deshabilitada en este servidor.",
       "password": "Contraseña",
-      "passwordDesc": "Solo la usan los clientes Trojan y Shadowsocks; se ignora para VLESS, VMess, Hysteria y WireGuard.",
+      "passwordDesc": "La usan los clientes Trojan, Shadowsocks, TUIC y MASQUE; se ignora para VLESS, VMess, Hysteria y WireGuard.",
       "subId": "ID de suscripción",
       "subIdDesc": "También sirve como código de invitación de este cliente en el bot de Telegram: quien lo envíe al bot queda vinculado a este cliente. Mantenlo largo y aleatorio: un ID corto o fácil de adivinar puede ser reclamado por otra persona.",
       "online": "En línea",
@@ -1929,6 +1957,7 @@
         "serverNamePlaceholder": "nombre del servidor",
         "verifyPeerName": "Verificar nombre del peer",
         "pinnedSha256": "SHA256 pinned",
+        "useSystemCA": "Usar CA del sistema",
         "shortId": "Short ID",
         "sockopts": "Sockopts",
         "keepAliveInterval": "Intervalo keep alive",
@@ -1936,7 +1965,10 @@
         "interface": "Interfaz",
         "proxyProtocol": "Proxy protocol",
         "tcpUserTimeoutMs": "TCP user timeout (ms)",
-        "tcpKeepAliveIdleS": "TCP keep-alive idle (s)"
+        "tcpKeepAliveIdleS": "TCP keep-alive idle (s)",
+        "masqueWarpDesc": "Conecta a Cloudflare WARP mediante MASQUE con una clave ECDSA P-256 registrada; host y path usan por defecto el endpoint de Cloudflare.",
+        "masqueWarpPublicKey": "Clave pública del endpoint",
+        "masqueWarpAddress": "Direcciones del túnel"
       },
       "outbound": {
         "tag": "Etiqueta",
@@ -2197,7 +2229,9 @@
         "warpPlusData": "Datos WARP+",
         "quota": "Cuota",
         "usage": "Uso",
-        "addOutbound": "Añadir salida"
+        "addOutbound": "Añadir salida",
+        "masqueDesc": "Registra un dispositivo WARP aparte inscrito para MASQUE; el registro de WireGuard de arriba no se ve afectado.",
+        "addMasqueOutbound": "Añadir outbound de WARP sobre MASQUE"
       },
       "dns": {
         "enable": "Habilitar DNS",

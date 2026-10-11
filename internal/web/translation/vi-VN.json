@@ -694,7 +694,35 @@
           "listen": "Địa chỉ listen inbound",
           "custom": "Tùy chỉnh"
         },
-        "autoFill": "Tự động điền"
+        "autoFill": "Tự động điền",
+        "xdrive": {
+          "service": "Dịch vụ lưu trữ",
+          "serviceLocal": "Thư mục cục bộ",
+          "serviceTemplate": "Template tùy chỉnh",
+          "remoteFolder": "Thư mục từ xa",
+          "clientId": "Client ID",
+          "clientSecret": "Client Secret",
+          "refreshToken": "Refresh Token",
+          "secrets": "Giá trị bí mật",
+          "secretsDesc": "Các giá trị template đọc dưới dạng {secret0}, {secret1}, …",
+          "template": "Template lưu trữ",
+          "templateInvalid": "Phải là một đối tượng JSON",
+          "front": "Địa chỉ fronting",
+          "frontDesc": "Host hoặc IP tùy chọn để kết nối tới API lưu trữ (domain fronting).",
+          "frontPort": "Cổng fronting",
+          "segmentBytes": "Kích thước phân đoạn (byte)",
+          "flushInterval": "Khoảng gửi (ms)",
+          "pollInterval": "Khoảng thăm dò (ms)",
+          "maxPollInterval": "Khoảng thăm dò tối đa (ms)",
+          "eagerWindow": "Cửa sổ gửi sớm (ms)",
+          "holeTimeout": "Thời gian chờ phân đoạn thiếu (ms)",
+          "sessionTtl": "TTL phiên (s)",
+          "concurrency": "Số luồng đồng thời"
+        },
+        "masque": {
+          "addressPool": "Dải địa chỉ",
+          "addressPoolDesc": "Địa chỉ đường hầm được cấp từ các tiền tố này — tối đa một IPv4 và một IPv6."
+        }
       },
       "info": {
         "mode": "Chế độ",
@@ -789,7 +817,7 @@
       "limitIpFail2banWindows": "Fail2ban không khả dụng trên Windows nên không thể áp dụng giới hạn IP.",
       "limitIpDisabled": "Tính năng giới hạn IP đã bị tắt trên máy chủ này.",
       "password": "Mật khẩu",
-      "passwordDesc": "Chỉ được dùng bởi các client Trojan và Shadowsocks; bị bỏ qua đối với VLESS, VMess, Hysteria và WireGuard.",
+      "passwordDesc": "Được dùng bởi các client Trojan, Shadowsocks, TUIC và MASQUE; bị bỏ qua đối với VLESS, VMess, Hysteria và WireGuard.",
       "subId": "ID đăng ký",
       "subIdDesc": "Cũng được dùng làm mã mời bot Telegram của client này: ai gửi mã này cho bot sẽ được liên kết với client. Hãy để mã dài và ngẫu nhiên — ID ngắn hoặc dễ đoán có thể bị người khác chiếm.",
       "online": "Trực tuyến",
@@ -1929,6 +1957,7 @@
         "serverNamePlaceholder": "tên máy chủ",
         "verifyPeerName": "Xác minh tên peer",
         "pinnedSha256": "SHA256 pinned",
+        "useSystemCA": "Dùng CA của hệ thống",
         "shortId": "Short ID",
         "sockopts": "Sockopts",
         "keepAliveInterval": "Khoảng keep alive",
@@ -1936,7 +1965,10 @@
         "interface": "Giao diện",
         "proxyProtocol": "Proxy protocol",
         "tcpUserTimeoutMs": "TCP user timeout (ms)",
-        "tcpKeepAliveIdleS": "TCP keep-alive idle (s)"
+        "tcpKeepAliveIdleS": "TCP keep-alive idle (s)",
+        "masqueWarpDesc": "Kết nối Cloudflare WARP qua MASQUE bằng khóa ECDSA P-256 đã đăng ký; host và path mặc định là endpoint của Cloudflare.",
+        "masqueWarpPublicKey": "Khóa công khai endpoint",
+        "masqueWarpAddress": "Địa chỉ đường hầm"
       },
       "outbound": {
         "tag": "Tag",
@@ -2197,7 +2229,9 @@
         "warpPlusData": "Dữ liệu WARP+",
         "quota": "Hạn ngạch",
         "usage": "Sử dụng",
-        "addOutbound": "Thêm outbound"
+        "addOutbound": "Thêm outbound",
+        "masqueDesc": "Đăng ký một thiết bị WARP riêng cho MASQUE; đăng ký WireGuard ở trên không bị ảnh hưởng.",
+        "addMasqueOutbound": "Thêm outbound WARP qua MASQUE"
       },
       "dns": {
         "enable": "Kích hoạt DNS",

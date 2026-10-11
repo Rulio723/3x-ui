@@ -694,7 +694,35 @@
         "bytesPerSecTip": "حد السرعة (بايت/ثانية) المطبّق على مرور الـ fallback بعد العتبة، عشان الفحوصات ماتقدرش تستخدم سيرفرك كنطاق ترددي مجاني للهدف. 0 = بلا حد (بيعطّل الاتجاه ده).",
         "burstBytesPerSec": "بايت في الثانية للدفقة",
         "burstBytesPerSecTip": "السماح بدفقات قصيرة فوق المعدل الثابت (حجم token-bucket). لو أقل من بايت في الثانية بيترفع ليطابقه.",
-        "autoFill": "الملء التلقائي"
+        "autoFill": "الملء التلقائي",
+        "xdrive": {
+          "service": "خدمة التخزين",
+          "serviceLocal": "مجلد محلي",
+          "serviceTemplate": "قالب مخصص",
+          "remoteFolder": "المجلد البعيد",
+          "clientId": "Client ID",
+          "clientSecret": "Client Secret",
+          "refreshToken": "Refresh Token",
+          "secrets": "الأسرار",
+          "secretsDesc": "قيم يقرؤها القالب باسم {secret0} و{secret1} …",
+          "template": "قالب التخزين",
+          "templateInvalid": "يجب أن يكون كائن JSON",
+          "front": "عنوان الواجهة (Front)",
+          "frontDesc": "مضيف أو IP اختياري يُتصل عبره بواجهة API التخزين (domain fronting).",
+          "frontPort": "منفذ الواجهة (Front)",
+          "segmentBytes": "حجم المقطع (بايت)",
+          "flushInterval": "فاصل الإرسال (ms)",
+          "pollInterval": "فاصل الاستطلاع (ms)",
+          "maxPollInterval": "أقصى فاصل استطلاع (ms)",
+          "eagerWindow": "نافذة الإرسال المبكر (ms)",
+          "holeTimeout": "مهلة المقطع المفقود (ms)",
+          "sessionTtl": "مدة صلاحية الجلسة (s)",
+          "concurrency": "التزامن"
+        },
+        "masque": {
+          "addressPool": "مجمّع العناوين",
+          "addressPoolDesc": "تُخصَّص عناوين النفق من هذه البادئات — بحد أقصى IPv4 واحد و IPv6 واحد."
+        }
       },
       "info": {
         "mode": "الوضع",
@@ -789,7 +817,7 @@
       "limitIpFail2banWindows": "Fail2ban غير متوفّر على نظام Windows، لذا لا يمكن تطبيق حد عناوين IP.",
       "limitIpDisabled": "ميزة حد عناوين IP معطّلة على هذا الخادم.",
       "password": "كلمة المرور",
-      "passwordDesc": "تُستخدم فقط من قبل عملاء Trojan و Shadowsocks؛ ويتم تجاهلها لـ VLESS و VMess و Hysteria و WireGuard.",
+      "passwordDesc": "يستخدمها عملاء Trojan و Shadowsocks و TUIC و MASQUE؛ ويتم تجاهلها لـ VLESS و VMess و Hysteria و WireGuard.",
       "subId": "معرّف الاشتراك",
       "subIdDesc": "يُستخدم أيضًا كرمز دعوة لهذا العميل في بوت تيليجرام: من يرسله إلى البوت يُربط بهذا العميل. اجعله طويلًا وعشوائيًا — فالمعرّف القصير أو السهل التخمين قد يستولي عليه شخص آخر.",
       "online": "متصل",
@@ -1929,6 +1957,7 @@
         "serverNamePlaceholder": "اسم الخادم",
         "verifyPeerName": "التحقق من اسم peer",
         "pinnedSha256": "SHA256 مثبت",
+        "useSystemCA": "استخدام CA النظام",
         "shortId": "Short ID",
         "sockopts": "Sockopts",
         "keepAliveInterval": "فاصل keep alive",
@@ -1936,7 +1965,10 @@
         "interface": "الواجهة",
         "proxyProtocol": "Proxy protocol",
         "tcpUserTimeoutMs": "TCP user timeout (ms)",
-        "tcpKeepAliveIdleS": "TCP keep-alive idle (ثانية)"
+        "tcpKeepAliveIdleS": "TCP keep-alive idle (ثانية)",
+        "masqueWarpDesc": "الاتصال بـ Cloudflare WARP عبر MASQUE بمفتاح ECDSA P-256 مسجَّل؛ يكون host و path افتراضيًا نقطة نهاية Cloudflare.",
+        "masqueWarpPublicKey": "المفتاح العام لنقطة النهاية",
+        "masqueWarpAddress": "عناوين النفق"
       },
       "outbound": {
         "tag": "الوسم",
@@ -2197,7 +2229,9 @@
         "warpPlusData": "بيانات WARP+",
         "quota": "الحصة",
         "usage": "الاستخدام",
-        "addOutbound": "إضافة صادر"
+        "addOutbound": "إضافة صادر",
+        "masqueDesc": "يسجّل جهاز WARP منفصلًا مخصصًا لـ MASQUE؛ ولا يتأثر تسجيل WireGuard أعلاه.",
+        "addMasqueOutbound": "إضافة outbound لـ WARP عبر MASQUE"
       },
       "dns": {
         "enable": "فعل DNS",

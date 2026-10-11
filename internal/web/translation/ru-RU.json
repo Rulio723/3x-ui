@@ -695,6 +695,34 @@
           "node": "Адрес узла",
           "listen": "Адрес прослушивания inbound",
           "custom": "Пользовательская"
+        },
+        "xdrive": {
+          "service": "Сервис хранилища",
+          "serviceLocal": "Локальная папка",
+          "serviceTemplate": "Свой шаблон",
+          "remoteFolder": "Удалённая папка",
+          "clientId": "Client ID",
+          "clientSecret": "Client Secret",
+          "refreshToken": "Refresh Token",
+          "secrets": "Секреты",
+          "secretsDesc": "Значения, которые шаблон читает как {secret0}, {secret1}, …",
+          "template": "Шаблон хранилища",
+          "templateInvalid": "Должен быть объект JSON",
+          "front": "Адрес фронтинга",
+          "frontDesc": "Необязательный хост или IP для подключения к API хранилища (domain fronting).",
+          "frontPort": "Порт фронтинга",
+          "segmentBytes": "Размер сегмента (байт)",
+          "flushInterval": "Интервал отправки (мс)",
+          "pollInterval": "Интервал опроса (мс)",
+          "maxPollInterval": "Макс. интервал опроса (мс)",
+          "eagerWindow": "Окно упреждения (мс)",
+          "holeTimeout": "Тайм-аут пропущенного сегмента (мс)",
+          "sessionTtl": "TTL сессии (с)",
+          "concurrency": "Параллелизм"
+        },
+        "masque": {
+          "addressPool": "Пул адресов",
+          "addressPoolDesc": "Адреса туннелей выдаются из этих префиксов — не более одного IPv4 и одного IPv6."
         }
       },
       "info": {
@@ -789,7 +817,7 @@
       "limitIpFail2banWindows": "Fail2ban недоступен в Windows, поэтому ограничение по IP не может быть применено.",
       "limitIpDisabled": "Функция ограничения по IP отключена на этом сервере.",
       "password": "Пароль",
-      "passwordDesc": "Используется клиентами Trojan, Shadowsocks и TUIC; игнорируется для VLESS, VMess, Hysteria и WireGuard.",
+      "passwordDesc": "Используется клиентами Trojan, Shadowsocks, TUIC и MASQUE; игнорируется для VLESS, VMess, Hysteria и WireGuard.",
       "subId": "ID подписки",
       "subIdDesc": "Также служит кодом приглашения этого клиента в Telegram-боте: тот, кто отправит его боту, будет привязан к этому клиенту. Используйте длинное случайное значение — короткий или легко угадываемый ID может присвоить кто-то другой.",
       "online": "В сети",
@@ -1929,6 +1957,7 @@
         "serverNamePlaceholder": "имя сервера",
         "verifyPeerName": "Проверять имя peer",
         "pinnedSha256": "Pinned SHA256",
+        "useSystemCA": "Использовать системные CA",
         "shortId": "Short ID",
         "sockopts": "Sockopts",
         "keepAliveInterval": "Интервал keep alive",
@@ -1936,7 +1965,10 @@
         "interface": "Интерфейс",
         "proxyProtocol": "Proxy protocol",
         "tcpUserTimeoutMs": "TCP user timeout (мс)",
-        "tcpKeepAliveIdleS": "TCP keep-alive idle (с)"
+        "tcpKeepAliveIdleS": "TCP keep-alive idle (с)",
+        "masqueWarpDesc": "Подключение к Cloudflare WARP через MASQUE с зарегистрированным ключом ECDSA P-256; host и path по умолчанию указывают на конечную точку Cloudflare.",
+        "masqueWarpPublicKey": "Открытый ключ конечной точки",
+        "masqueWarpAddress": "Адреса туннеля"
       },
       "outbound": {
         "tag": "Тег",
@@ -2197,7 +2229,9 @@
         "warpPlusData": "WARP+ data",
         "quota": "Квота",
         "usage": "Использование",
-        "addOutbound": "Добавить исходящий"
+        "addOutbound": "Добавить исходящий",
+        "masqueDesc": "Регистрирует отдельное устройство WARP для MASQUE; регистрация WireGuard выше не затрагивается.",
+        "addMasqueOutbound": "Добавить аутбаунд WARP через MASQUE"
       },
       "dns": {
         "enable": "Включить DNS",

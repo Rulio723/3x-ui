@@ -694,7 +694,35 @@
           "listen": "آدرس شنود ورودی",
           "custom": "سفارشی"
         },
-        "autoFill": "تکمیل خودکار"
+        "autoFill": "تکمیل خودکار",
+        "xdrive": {
+          "service": "سرویس ذخیره‌سازی",
+          "serviceLocal": "پوشهٔ محلی",
+          "serviceTemplate": "قالب سفارشی",
+          "remoteFolder": "پوشهٔ راه دور",
+          "clientId": "Client ID",
+          "clientSecret": "Client Secret",
+          "refreshToken": "Refresh Token",
+          "secrets": "مقادیر محرمانه",
+          "secretsDesc": "مقادیری که قالب با {secret0}، {secret1}، … می‌خواند",
+          "template": "قالب ذخیره‌سازی",
+          "templateInvalid": "باید یک شیء JSON باشد",
+          "front": "آدرس Front",
+          "frontDesc": "میزبان یا IP اختیاری که API ذخیره‌ساز از طریق آن وصل می‌شود (domain fronting).",
+          "frontPort": "پورت Front",
+          "segmentBytes": "اندازهٔ قطعه (بایت)",
+          "flushInterval": "فاصلهٔ ارسال (میلی‌ثانیه)",
+          "pollInterval": "فاصلهٔ بررسی (میلی‌ثانیه)",
+          "maxPollInterval": "حداکثر فاصلهٔ بررسی (میلی‌ثانیه)",
+          "eagerWindow": "پنجرهٔ پیش‌ارسال (میلی‌ثانیه)",
+          "holeTimeout": "مهلت قطعهٔ گمشده (میلی‌ثانیه)",
+          "sessionTtl": "TTL نشست (ثانیه)",
+          "concurrency": "هم‌زمانی"
+        },
+        "masque": {
+          "addressPool": "مخزن آدرس",
+          "addressPoolDesc": "آدرس‌های تونل از این پیشوندها تخصیص داده می‌شوند — حداکثر یک IPv4 و یک IPv6."
+        }
       },
       "info": {
         "mode": "حالت",
@@ -789,7 +817,7 @@
       "limitIpFail2banWindows": "Fail2ban روی ویندوز در دسترس نیست، بنابراین محدودیت IP قابل اعمال نیست.",
       "limitIpDisabled": "قابلیت محدودیت IP روی این سرور غیرفعال است.",
       "password": "رمز عبور",
-      "passwordDesc": "فقط توسط کلاینت‌های Trojan و Shadowsocks استفاده می‌شود؛ برای VLESS، VMess، Hysteria و WireGuard نادیده گرفته می‌شود.",
+      "passwordDesc": "توسط کلاینت‌های Trojan، Shadowsocks، TUIC و MASQUE استفاده می‌شود؛ برای VLESS، VMess، Hysteria و WireGuard نادیده گرفته می‌شود.",
       "subId": "شناسه اشتراک",
       "subIdDesc": "این شناسه، کد دعوت این کاربر در ربات تلگرام هم هست: هر کسی آن را به ربات بفرستد به این کاربر متصل می‌شود. آن را طولانی و تصادفی نگه دارید؛ شناسهٔ کوتاه یا قابل حدس ممکن است توسط شخص دیگری تصاحب شود.",
       "online": "آنلاین",
@@ -1929,6 +1957,7 @@
         "serverNamePlaceholder": "نام سرور",
         "verifyPeerName": "تایید نام Peer",
         "pinnedSha256": "SHA256 پین‌شده",
+        "useSystemCA": "استفاده از CA سیستم",
         "shortId": "Short ID",
         "sockopts": "Sockopts",
         "keepAliveInterval": "بازه Keep alive",
@@ -1936,7 +1965,10 @@
         "interface": "رابط",
         "proxyProtocol": "Proxy Protocol",
         "tcpUserTimeoutMs": "TCP user timeout (ms)",
-        "tcpKeepAliveIdleS": "TCP keep-alive idle (s)"
+        "tcpKeepAliveIdleS": "TCP keep-alive idle (s)",
+        "masqueWarpDesc": "اتصال به Cloudflare WARP از طریق MASQUE با یک کلید ECDSA P-256 ثبت‌شده؛ host و path به‌طور پیش‌فرض endpoint کلودفلر هستند.",
+        "masqueWarpPublicKey": "کلید عمومی endpoint",
+        "masqueWarpAddress": "آدرس‌های تونل"
       },
       "outbound": {
         "tag": "تگ",
@@ -2197,7 +2229,9 @@
         "warpPlusData": "داده WARP+",
         "quota": "سهمیه",
         "usage": "مصرف",
-        "addOutbound": "افزودن خروجی"
+        "addOutbound": "افزودن خروجی",
+        "masqueDesc": "یک دستگاه WARP جداگانه برای MASQUE ثبت می‌کند؛ ثبت WireGuard بالا تغییری نمی‌کند.",
+        "addMasqueOutbound": "افزودن outbound برای WARP روی MASQUE"
       },
       "dns": {
         "enable": "فعال کردن حل دامنه",
