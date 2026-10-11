@@ -310,6 +310,60 @@ describe('OutboundFormModal', () => {
 
   // xray-core reads Google Drive's three secrets by position (ClientID, ClientSecret,
   // RefreshToken); a misordered list fails OAuth only when the tunnel first dials.
+  it('gates Flow and Mux on the flow the transport can actually carry', async () => {
+    const vless = (encryption: string, streamSettings: Record<string, unknown>) => ({
+      protocol: 'vless',
+      tag: 'flow-out',
+      settings: {
+        address: 'example.com',
+        port: 443,
+        id: 'c9f0c2d0-0000-4000-8000-000000000000',
+        flow: 'xtls-rprx-vision',
+        encryption,
+      },
+      streamSettings,
+    });
+    const openModal = async (outbound: Record<string, unknown>) => {
+      const queryClient = makeTestQueryClient();
+      const tree = (open: boolean) => (
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <OutboundFormModal
+              open={open}
+              outbound={outbound}
+              existingTags={[]}
+              onClose={() => {}}
+              onConfirm={() => {}}
+            />
+          </ThemeProvider>
+        </QueryClientProvider>
+      );
+      const view = render(tree(false));
+      view.rerender(tree(true));
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 0));
+      });
+      return view;
+    };
+
+    const ws = await openModal(
+      vless('none', { network: 'ws', security: 'tls', wsSettings: { path: '/' } }),
+    );
+    expect(formItemByLabel('Transmission')?.textContent).toContain('WebSocket');
+    expect(formItemByLabel('Flow')).toBeUndefined();
+    expect(formItemByLabel('Mux')).toBeDefined();
+    ws.unmount();
+
+    await openModal(
+      vless('mlkem768x25519plus.native.0rtt.key', {
+        network: 'xhttp',
+        security: 'none',
+        xhttpSettings: { path: '/', mode: 'auto' },
+      }),
+    );
+    expect(formItemByLabel('Flow')).toBeDefined();
+  });
+
   it('saves an XDRIVE stream picked in the transmission selector', async () => {
     const onConfirm = vi.fn();
     const queryClient = makeTestQueryClient();
@@ -375,6 +429,80 @@ describe('OutboundFormModal', () => {
         remoteFolder: 'xray-tunnel',
         secrets: ['id.apps.googleusercontent.com', 'client-secret', 'refresh-token'],
       },
+    });
+  });
+});
+
+// xray-core 26.10.10 dials the XDRIVE storage API with the outbound's tlsSettings (SNI,
+// uTLS fingerprint), so switching a TLS outbound to XDRIVE must keep them.
+describe('OutboundFormModal XDRIVE TLS', () => {
+  it('keeps TLS when a TLS outbound moves to XDRIVE', async () => {
+    const onConfirm = vi.fn();
+    const queryClient = makeTestQueryClient();
+    const outbound = {
+      protocol: 'vless',
+      tag: 'drive-out',
+      settings: {
+        vnext: [
+          {
+            address: 'www.google.com',
+            port: 443,
+            users: [{ id: 'c9f0c2d0-0000-4000-8000-000000000000', encryption: 'none' }],
+          },
+        ],
+      },
+      streamSettings: {
+        network: 'tcp',
+        security: 'tls',
+        tlsSettings: { serverName: 'www.google.com', fingerprint: 'chrome' },
+      },
+    };
+    const tree = (open: boolean) => (
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <OutboundFormModal
+            open={open}
+            outbound={outbound}
+            existingTags={[]}
+            onClose={() => {}}
+            onConfirm={onConfirm}
+          />
+        </ThemeProvider>
+      </QueryClientProvider>
+    );
+    const { rerender } = render(tree(false));
+    rerender(tree(true));
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    chooseOptionByLabel('Transmission', 'XDRIVE');
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect((screen.getByRole('radio', { name: 'TLS' }) as HTMLInputElement).checked).toBe(true);
+    for (const [label, value] of [
+      ['Remote folder', 'xray-tunnel'],
+      ['Client ID', 'id.apps.googleusercontent.com'],
+      ['Client secret', 'client-secret'],
+      ['Refresh token', 'refresh-token'],
+    ]) {
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    }
+    const ok = document.querySelector('.ant-modal-footer .ant-btn-primary') as HTMLElement;
+    await act(async () => {
+      fireEvent.click(ok);
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    const payload = onConfirm.mock.calls[0][0] as { streamSettings: Record<string, unknown> };
+    expect(payload.streamSettings).toMatchObject({
+      network: 'xdrive',
+      security: 'tls',
+      tlsSettings: { serverName: 'www.google.com', fingerprint: 'chrome' },
     });
   });
 });
@@ -514,5 +642,137 @@ describe('OutboundFormModal UDP hop', () => {
     ]);
     expect(payload.streamSettings.finalmask.quicParams?.udpHop).toBeUndefined();
     expect(payload.streamSettings.finalmask.quicParams?.congestion).toBe('bbr');
+  });
+});
+
+describe('OutboundFormModal finalmask variables', () => {
+  function xhttpOutbound(finalmask: Record<string, unknown>) {
+    return {
+      protocol: 'vless',
+      tag: 'masked',
+      settings: {
+        vnext: [
+          {
+            address: 'example.com',
+            port: 443,
+            users: [{ id: 'c9f0c2d0-0000-4000-8000-000000000000', encryption: 'none' }],
+          },
+        ],
+      },
+      streamSettings: {
+        network: 'xhttp',
+        security: 'none',
+        xhttpSettings: { path: '/', mode: 'auto' },
+        finalmask,
+      },
+    };
+  }
+
+  async function saveFinalmask(
+    finalmask: Record<string, unknown>,
+    edit: () => void = () => {},
+  ): Promise<Record<string, unknown>> {
+    const onConfirm = vi.fn();
+    const queryClient = makeTestQueryClient();
+    const tree = (open: boolean) => (
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <OutboundFormModal
+            open={open}
+            outbound={xhttpOutbound(finalmask)}
+            existingTags={[]}
+            onClose={() => {}}
+            onConfirm={onConfirm}
+          />
+        </ThemeProvider>
+      </QueryClientProvider>
+    );
+    const { rerender } = render(tree(false));
+    rerender(tree(true));
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    edit();
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    const ok = document.querySelector('.ant-modal-footer .ant-btn-primary') as HTMLElement;
+    await act(async () => {
+      fireEvent.click(ok);
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    return (
+      onConfirm.mock.calls[0][0] as { streamSettings: { finalmask: Record<string, unknown> } }
+    ).streamSettings.finalmask;
+  }
+
+  function typeInto(label: string, value: string) {
+    const input = formItemByLabel(label)?.querySelector('input, textarea');
+    if (!input) throw new Error(`${label} input not found`);
+    fireEvent.change(input, { target: { value } });
+  }
+
+  // xray-core 26.6 header-custom variables, error replies and standalone UDP headers, plus
+  // the sudoku UDP mask; the same fixture is built by Go's TestGoldenStreamFixturesBuildInXray.
+  it('keeps every header-custom variable, sudoku UDP mask and noise reset range on save', async () => {
+    const fixture = (await import('./golden/fixtures/finalmask/header-custom-variables.json'))
+      .default as Record<string, unknown>;
+
+    expect(await saveFinalmask(structuredClone(fixture))).toEqual(fixture);
+  });
+
+  // The core rejects an item carrying two kinds ("exactly one item kind must be set").
+  it('drops the bytes of an item switched to reuse a variable', async () => {
+    const finalmask = await saveFinalmask(
+      {
+        udp: [
+          {
+            type: 'header-custom',
+            settings: { client: [{ type: 'array', rand: 4, randRange: '0-255' }], server: [] },
+          },
+        ],
+      },
+      () => {
+        chooseOptionByLabel('Kind', 'Reuse variable');
+        typeInto('Reuse', 'nonce');
+      },
+    );
+
+    expect(finalmask.udp).toEqual([
+      { type: 'header-custom', settings: { client: [{ reuse: 'nonce' }], server: [] } },
+    ]);
+  });
+
+  // A string transform fails the whole core config, so half-typed JSON must never be saved.
+  it.each([
+    ['{"op": "be16", "args": [{"u64": 7}]}', [{ transform: { op: 'be16', args: [{ u64: 7 }] } }]],
+    ['{"op": "be16"', [{}]],
+  ])('saves the typed transform %s only once it parses', async (typed, client) => {
+    const finalmask = await saveFinalmask(
+      {
+        udp: [
+          { type: 'header-custom', settings: { client: [{ type: 'array', rand: 4 }], server: [] } },
+        ],
+      },
+      () => {
+        chooseOptionByLabel('Kind', 'Transform');
+        typeInto('Transform', typed);
+      },
+    );
+
+    expect(finalmask.udp).toEqual([{ type: 'header-custom', settings: { client, server: [] } }]);
+  });
+
+  it('saves a noise reset typed as a range', async () => {
+    const finalmask = await saveFinalmask(
+      { udp: [{ type: 'noise', settings: { reset: 0, noise: [] } }] },
+      () => typeInto('Reset', '60-120'),
+    );
+
+    expect(finalmask.udp).toEqual([{ type: 'noise', settings: { reset: '60-120', noise: [] } }]);
   });
 });
