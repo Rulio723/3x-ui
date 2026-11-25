@@ -44,6 +44,7 @@ export interface AllSetting {
   ldapUserAttr: string;
   ldapUserFilter: string;
   ldapVlessField: string;
+  mcpEnable: boolean;
   networkTrafficInterface: string;
   networkTrafficMode: string;
   nodeDownThreshold: number;
@@ -256,6 +257,7 @@ export interface AllSettingView {
   ldapUserAttr: string;
   ldapUserFilter: string;
   ldapVlessField: string;
+  mcpEnable: boolean;
   networkTrafficInterface: string;
   networkTrafficMode: string;
   nodeDownThreshold: number;
@@ -1092,6 +1094,32 @@ export interface RealityScanResult {
   tls13: boolean;
   tlsVersion: string;
   x25519: boolean;
+}
+
+export interface RealityWatchEntry {
+  auto: boolean;
+  spares: string[];
+}
+
+export interface RealityWatchEvent {
+  at: number;
+  from: string;
+  reason: string;
+  to: string;
+}
+
+export interface RealityWatchStatus {
+  auto: boolean;
+  checkedAt: number;
+  events: RealityWatchEvent[];
+  fails: number;
+  inboundId: number;
+  latencyMs: number;
+  ok: boolean;
+  reason: string;
+  serverNames: string[];
+  spares: string[];
+  target: string;
 }
 
 export interface ServerSettings {

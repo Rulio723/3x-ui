@@ -126,6 +126,9 @@ export const SCHEMAS: Record<string, unknown> = {
       "ldapVlessField": {
         "type": "string"
       },
+      "mcpEnable": {
+        "type": "boolean"
+      },
       "networkTrafficInterface": {
         "example": "eth0",
         "type": "string"
@@ -695,6 +698,7 @@ export const SCHEMAS: Record<string, unknown> = {
       "ldapUserAttr",
       "ldapUserFilter",
       "ldapVlessField",
+      "mcpEnable",
       "networkTrafficInterface",
       "networkTrafficMode",
       "nodeDownThreshold",
@@ -1014,6 +1018,9 @@ export const SCHEMAS: Record<string, unknown> = {
       },
       "ldapVlessField": {
         "type": "string"
+      },
+      "mcpEnable": {
+        "type": "boolean"
       },
       "networkTrafficInterface": {
         "example": "eth0",
@@ -1594,6 +1601,7 @@ export const SCHEMAS: Record<string, unknown> = {
       "ldapUserAttr",
       "ldapUserFilter",
       "ldapVlessField",
+      "mcpEnable",
       "networkTrafficInterface",
       "networkTrafficMode",
       "nodeDownThreshold",
@@ -4851,6 +4859,132 @@ export const SCHEMAS: Record<string, unknown> = {
       "tls13",
       "tlsVersion",
       "x25519"
+    ],
+    "type": "object"
+  },
+  "RealityWatchEntry": {
+    "description": "RealityWatchEntry is what the admin sets per inbound: spare targets (host:port) in order\nof preference, and whether a dead target is replaced without asking.",
+    "properties": {
+      "auto": {
+        "example": true,
+        "type": "boolean"
+      },
+      "spares": {
+        "example": [
+          "www.example.com:443"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "auto",
+      "spares"
+    ],
+    "type": "object"
+  },
+  "RealityWatchEvent": {
+    "description": "RealityWatchEvent is one switch (To set) or a failed attempt to find a working spare.",
+    "properties": {
+      "at": {
+        "example": 1793000000,
+        "format": "int64",
+        "type": "integer"
+      },
+      "from": {
+        "example": "old.example.com:443",
+        "type": "string"
+      },
+      "reason": {
+        "example": "TLS handshake failed: EOF",
+        "type": "string"
+      },
+      "to": {
+        "example": "www.example.com:443",
+        "type": "string"
+      }
+    },
+    "required": [
+      "at",
+      "from",
+      "reason",
+      "to"
+    ],
+    "type": "object"
+  },
+  "RealityWatchStatus": {
+    "properties": {
+      "auto": {
+        "example": true,
+        "type": "boolean"
+      },
+      "checkedAt": {
+        "example": 1793000000,
+        "format": "int64",
+        "type": "integer"
+      },
+      "events": {
+        "items": {
+          "$ref": "#/components/schemas/RealityWatchEvent"
+        },
+        "type": "array"
+      },
+      "fails": {
+        "example": 0,
+        "type": "integer"
+      },
+      "inboundId": {
+        "example": 3,
+        "type": "integer"
+      },
+      "latencyMs": {
+        "example": 180,
+        "type": "integer"
+      },
+      "ok": {
+        "example": true,
+        "type": "boolean"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "serverNames": {
+        "example": [
+          "old.example.com"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "spares": {
+        "example": [
+          "www.example.com:443"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "target": {
+        "example": "old.example.com:443",
+        "type": "string"
+      }
+    },
+    "required": [
+      "auto",
+      "checkedAt",
+      "events",
+      "fails",
+      "inboundId",
+      "latencyMs",
+      "ok",
+      "reason",
+      "serverNames",
+      "spares",
+      "target"
     ],
     "type": "object"
   },

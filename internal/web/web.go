@@ -273,7 +273,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 
 	s.index = controller.NewIndexController(g)
 	s.panel = controller.NewXUIController(g)
-	s.api = controller.NewAPIController(g)
+	s.api = controller.NewAPIController(g, engine)
 
 	// Initialize WebSocket hub
 	s.wsHub = websocket.NewHub()
@@ -310,6 +310,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 // counters.
 const (
 	cadenceXrayRunning   = "@every 1s"
+	cadenceRealityWatch  = "@every 10m"
 	cadenceXrayRestart   = "@every 30s"
 	cadenceXrayTraffic   = "@every 5s"
 	cadenceMtproto       = "@every 10s"
@@ -387,6 +388,7 @@ func (s *Server) startTask(restartXray bool, loc *time.Location) {
 	_, _ = s.cron.AddJob("@daily", job.NewClearLogsJob())
 	_, _ = s.cron.AddJob(cadenceXrayLogPrune, job.NewPruneXrayLogsJob())
 	_, _ = s.cron.AddJob("@hourly", job.NewWarpIpJob())
+	_, _ = s.cron.AddJob(cadenceRealityWatch, job.NewRealityWatchJob())
 
 	// Inbound traffic reset jobs
 	// Run every hour

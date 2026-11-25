@@ -482,7 +482,7 @@ export const sections: readonly Section[] = [
             name: 'bucket',
             in: 'path',
             type: 'number',
-            desc: 'Bucket size in seconds. Allowed: 2, 30, 60, 120, 180, 300.',
+            desc: 'Bucket size in seconds. Allowed: 2, 5, 30, 60, 180, 360, 720, 1440, 2880, 10080.',
           },
         ],
       },
@@ -490,23 +490,37 @@ export const sections: readonly Section[] = [
         method: 'GET',
         path: '/panel/api/server/history/:metric/:bucket',
         summary:
-          'Aggregated time-series for one metric. Returns an array of {t, v} samples covering the last ~6 hours.',
+          'Aggregated time-series for one system metric. Returns up to 60 {t, v} samples; supported bucket sizes cover windows from 2 minutes up to 7 days.',
         params: [
           {
             name: 'metric',
             in: 'path',
             type: 'string',
-            desc: 'cpu | mem | netUp | netDown | online | load1 | load5 | load15.',
+            desc: 'cpu | mem | swap | netUp | netDown | pktUp | pktDown | diskRead | diskWrite | diskUsage | tcpCount | udpCount | online | load1 | load5 | load15.',
           },
           {
             name: 'bucket',
             in: 'path',
             type: 'number',
-            desc: 'Bucket size in seconds. Allowed: 2, 30, 60, 120, 180, 300.',
+            desc: 'Bucket size in seconds. Allowed: 2, 5, 30, 60, 180, 360, 720, 1440, 2880, 10080.',
           },
         ],
         response:
           '{\n  "success": true,\n  "obj": [\n    { "t": 1700000000, "v": 12.5 },\n    { "t": 1700000002, "v": 13.1 }\n  ]\n}',
+      },
+      {
+        method: 'GET',
+        path: '/panel/api/server/overviewHistory/:bucket',
+        summary:
+          'Aggregated history for all overview charts in one response: up to 60 {t, v} samples for each of cpu, mem, swap, diskUsage, netUp, netDown, tcpCount and udpCount.',
+        params: [
+          {
+            name: 'bucket',
+            in: 'path',
+            type: 'number',
+            desc: 'Bucket size in seconds. Allowed: 2, 5, 30, 60, 180, 360, 720, 1440, 2880, 10080.',
+          },
+        ],
       },
       {
         method: 'GET',
@@ -518,7 +532,7 @@ export const sections: readonly Section[] = [
         method: 'GET',
         path: '/panel/api/server/xrayMetricsHistory/:metric/:bucket',
         summary:
-          'Time-series history for one Xray runtime metric over the last ~6 hours. Same {t, v} shape as /history/:metric/:bucket.',
+          'Aggregated history for one Xray runtime metric. Returns up to 60 {t, v} samples for bucket windows up to 7 days.',
         params: [
           {
             name: 'metric',
@@ -530,7 +544,7 @@ export const sections: readonly Section[] = [
             name: 'bucket',
             in: 'path',
             type: 'number',
-            desc: 'Bucket size in seconds. Allowed: 2, 30, 60, 120, 180, 300.',
+            desc: 'Bucket size in seconds. Allowed: 2, 5, 30, 60, 180, 360, 720, 1440, 2880, 10080.',
           },
         ],
       },
@@ -556,7 +570,7 @@ export const sections: readonly Section[] = [
             name: 'bucket',
             in: 'path',
             type: 'number',
-            desc: 'Bucket size in seconds. Allowed: 2, 30, 60, 120, 180, 300.',
+            desc: 'Bucket size in seconds. Allowed: 2, 5, 30, 60, 180, 360, 720, 1440, 2880, 10080.',
           },
         ],
       },
@@ -2040,7 +2054,7 @@ export const sections: readonly Section[] = [
             name: 'bucket',
             in: 'path',
             type: 'number',
-            desc: 'Bucket size in seconds. Allowed: 2, 30, 60, 120, 180, 300.',
+            desc: 'Bucket size in seconds. Allowed: 2, 5, 30, 60, 180, 360, 720, 1440, 2880, 10080.',
           },
         ],
       },
@@ -2151,6 +2165,56 @@ export const sections: readonly Section[] = [
   },
 
   {
+    id: 'reality-watch',
+    title: 'REALITY watch',
+    description:
+      'Spare targets per REALITY inbound. Every 10 minutes the panel checks each watched target from this server; after 3 failed checks in a row, an inbound with auto switch on moves to the first spare that passes the same check and a real REALITY connection through a throwaway Xray server and client. Inbounds on nodes, and targets on this machine or the LAN (a bare port, a unix socket, a private address), are not checked.',
+    endpoints: [
+      {
+        method: 'GET',
+        path: '/panel/api/realityWatch/list',
+        summary:
+          'Status of every watched inbound: current target, spares, last check and the switch history.',
+        responseSchema: 'RealityWatchStatus',
+        responseSchemaArray: true,
+      },
+      {
+        method: 'GET',
+        path: '/panel/api/realityWatch/status/:id',
+        summary: 'Status of one REALITY inbound.',
+        params: [{ name: 'id', in: 'path', type: 'number', desc: 'Inbound ID.' }],
+        responseSchema: 'RealityWatchStatus',
+      },
+      {
+        method: 'POST',
+        path: '/panel/api/realityWatch/save/:id',
+        summary:
+          'Set the spare targets (host[:port], in order of preference, at most 10; the current target is dropped) and whether a dead target is replaced automatically.',
+        params: [{ name: 'id', in: 'path', type: 'number', desc: 'Inbound ID.' }],
+        body: '{\n  "auto": true,\n  "spares": ["www.example.com:443"]\n}',
+        responseSchema: 'RealityWatchStatus',
+      },
+      {
+        method: 'POST',
+        path: '/panel/api/realityWatch/switch/:id',
+        summary:
+          'Move the inbound to this target now and return its new status. Refused for a node inbound, or unless the target passes the server check and a real REALITY connection. Only target and serverNames change, plus any Hosts of this inbound that pin an old server name.',
+        params: [{ name: 'id', in: 'path', type: 'number', desc: 'Inbound ID.' }],
+        body: '{\n  "target": "www.example.com:443"\n}',
+        responseSchema: 'RealityWatchStatus',
+      },
+      {
+        method: 'POST',
+        path: '/panel/api/realityWatch/test',
+        summary:
+          'Check a target from this server and through a real REALITY connection; feasible is false with a reason when either fails.',
+        body: '{\n  "target": "www.example.com:443"\n}',
+        responseSchema: 'RealityScanResult',
+      },
+    ],
+  },
+
+  {
     id: 'backup',
     title: 'Backup',
     description: 'Operations that interact with the configured Telegram bot.',
@@ -2160,6 +2224,31 @@ export const sections: readonly Section[] = [
         path: '/panel/api/backuptotgbot',
         summary:
           'Send a fresh DB backup to every Telegram chat configured as an admin recipient. No body, no params.',
+      },
+    ],
+  },
+
+  {
+    id: 'mcp',
+    title: 'MCP',
+    description:
+      'Model Context Protocol endpoint for AI agents (Claude, Cursor, VS Code). Point an MCP client at this URL with an admin Bearer token; restricted token scopes are refused.',
+    endpoints: [
+      {
+        method: 'POST',
+        path: '/panel/api/mcp',
+        summary:
+          'Stateless streamable-HTTP MCP endpoint (JSON-RPC 2.0). Exposes panel tools for inbounds, clients, server, Xray, nodes, hosts and settings; each tool call runs the matching /panel/api route with the caller’s credentials. Off by default: answers 404 until the MCP server is enabled under Settings → Security → API Token.',
+        params: [
+          {
+            name: 'toolsets',
+            in: 'query',
+            type: 'string',
+            optional: true,
+            desc: 'Comma-separated tool groups to expose: inbounds, clients, server, panel. Omit for all. call_api and get_openapi_spec are always included.',
+          },
+        ],
+        body: '{\n  "jsonrpc": "2.0",\n  "id": 1,\n  "method": "tools/list"\n}',
       },
     ],
   },
