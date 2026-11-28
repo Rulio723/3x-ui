@@ -452,6 +452,46 @@ export const EXAMPLES: Record<string, unknown> = {
     "scope": "admin",
     "token": "new-token-string"
   },
+  "AttachCandidate": {
+    "alreadyAttached": false,
+    "comment": "Example client",
+    "email": "alice@example.test",
+    "enable": true,
+    "group": "staff",
+    "id": 1,
+    "inScope": true
+  },
+  "AttachCandidatePage": {
+    "eligible": 118,
+    "groups": [
+      "staff"
+    ],
+    "items": [
+      {
+        "alreadyAttached": false,
+        "comment": "Example client",
+        "email": "alice@example.test",
+        "enable": true,
+        "group": "staff",
+        "id": 1,
+        "inScope": true
+      }
+    ],
+    "maxId": 0,
+    "scopeToken": "",
+    "total": 120
+  },
+  "AttachJobStatus": {
+    "ended": "2025-01-01T00:00:00Z",
+    "error": "",
+    "result": null,
+    "running": false
+  },
+  "AttachSelectionResult": {
+    "attached": 9997,
+    "errors": 0,
+    "skipped": 0
+  },
   "Blocker": {
     "code": "tools",
     "detail": "awg"
@@ -1439,6 +1479,38 @@ export const EXAMPLES: Record<string, unknown> = {
       3
     ],
     "memberWeights": {},
+    "remark": "auto-fastest",
+    "sortOrder": 1,
+    "strategy": "random",
+    "updatedAt": 1710000000000
+  },
+  "SubBalancerProblem": {
+    "code": "unknown_inbound",
+    "detail": "amneziawg",
+    "inboundIds": [
+      7,
+      9
+    ]
+  },
+  "SubBalancerWithProblems": {
+    "createdAt": 1710000000000,
+    "enabled": true,
+    "id": 1,
+    "inboundIds": [
+      1,
+      3
+    ],
+    "memberWeights": {},
+    "problems": [
+      {
+        "code": "unknown_inbound",
+        "detail": "amneziawg",
+        "inboundIds": [
+          7,
+          9
+        ]
+      }
+    ],
     "remark": "auto-fastest",
     "sortOrder": 1,
     "strategy": "random",

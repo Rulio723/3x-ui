@@ -1877,6 +1877,140 @@ export const SCHEMAS: Record<string, unknown> = {
     ],
     "type": "object"
   },
+  "AttachCandidate": {
+    "properties": {
+      "alreadyAttached": {
+        "example": false,
+        "type": "boolean"
+      },
+      "comment": {
+        "example": "Example client",
+        "type": "string"
+      },
+      "email": {
+        "example": "alice@example.test",
+        "type": "string"
+      },
+      "enable": {
+        "example": true,
+        "type": "boolean"
+      },
+      "group": {
+        "example": "staff",
+        "type": "string"
+      },
+      "id": {
+        "example": 1,
+        "type": "integer"
+      },
+      "inScope": {
+        "example": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "alreadyAttached",
+      "comment",
+      "email",
+      "enable",
+      "group",
+      "id",
+      "inScope"
+    ],
+    "type": "object"
+  },
+  "AttachCandidatePage": {
+    "properties": {
+      "eligible": {
+        "example": 118,
+        "format": "int64",
+        "type": "integer"
+      },
+      "groups": {
+        "example": [
+          "staff"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/AttachCandidate"
+        },
+        "type": "array"
+      },
+      "maxId": {
+        "type": "integer"
+      },
+      "scopeToken": {
+        "type": "string"
+      },
+      "total": {
+        "example": 120,
+        "format": "int64",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "eligible",
+      "groups",
+      "items",
+      "total"
+    ],
+    "type": "object"
+  },
+  "AttachJobStatus": {
+    "properties": {
+      "ended": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "error": {
+        "type": "string"
+      },
+      "result": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AttachSelectionResult"
+          }
+        ],
+        "nullable": true
+      },
+      "running": {
+        "example": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "ended",
+      "running"
+    ],
+    "type": "object"
+  },
+  "AttachSelectionResult": {
+    "properties": {
+      "attached": {
+        "example": 9997,
+        "type": "integer"
+      },
+      "errors": {
+        "example": 0,
+        "type": "integer"
+      },
+      "skipped": {
+        "example": 0,
+        "type": "integer"
+      }
+    },
+    "required": [
+      "attached",
+      "errors",
+      "skipped"
+    ],
+    "type": "object"
+  },
   "Blocker": {
     "description": "Blocker is one unmet requirement.",
     "properties": {
@@ -5603,6 +5737,112 @@ export const SCHEMAS: Record<string, unknown> = {
       "enabled",
       "id",
       "inboundIds",
+      "remark",
+      "sortOrder",
+      "strategy",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "SubBalancerProblem": {
+    "description": "SubBalancerProblem is one reason a balancer cannot emit what an operator expects.\nAdvisories never change the emitted config, and per-client losses are out of scope.",
+    "properties": {
+      "code": {
+        "example": "unknown_inbound",
+        "type": "string"
+      },
+      "detail": {
+        "example": "amneziawg",
+        "type": "string"
+      },
+      "inboundIds": {
+        "example": [
+          7,
+          9
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "code"
+    ],
+    "type": "object"
+  },
+  "SubBalancerWithProblems": {
+    "description": "SubBalancerWithProblems embeds the row by value so it marshals flat; Problems is\nalways non-nil so the response shape is stable.",
+    "properties": {
+      "createdAt": {
+        "example": 1710000000000,
+        "format": "int64",
+        "type": "integer"
+      },
+      "enabled": {
+        "description": "No gorm default:true — a bool default makes an explicit false at insert\ncollapse back to the column default (zero value is skipped).",
+        "example": true,
+        "type": "boolean"
+      },
+      "id": {
+        "example": 1,
+        "type": "integer"
+      },
+      "inboundIds": {
+        "example": [
+          1,
+          3
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "type": "array"
+      },
+      "memberWeights": {
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "inboundId -\u003e leastLoad weight; absent entries mean 1.0. Only meaningful\nwith Strategy \"leastLoad\" — xray ignores costs on every other strategy.",
+        "type": "object"
+      },
+      "problems": {
+        "items": {
+          "$ref": "#/components/schemas/SubBalancerProblem"
+        },
+        "type": "array"
+      },
+      "remark": {
+        "example": "auto-fastest",
+        "maxLength": 256,
+        "type": "string"
+      },
+      "sortOrder": {
+        "example": 1,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "strategy": {
+        "enum": [
+          "leastLoad",
+          "leastPing",
+          "random",
+          "roundRobin"
+        ],
+        "example": "random",
+        "type": "string"
+      },
+      "updatedAt": {
+        "example": 1710000000000,
+        "format": "int64",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "createdAt",
+      "enabled",
+      "id",
+      "inboundIds",
+      "problems",
       "remark",
       "sortOrder",
       "strategy",

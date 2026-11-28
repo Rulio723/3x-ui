@@ -462,6 +462,42 @@ export const ApiTokenViewSchema = z.object({
 });
 export type ApiTokenView = z.infer<typeof ApiTokenViewSchema>;
 
+export const AttachCandidateSchema = z.object({
+  alreadyAttached: z.boolean(),
+  comment: z.string(),
+  email: z.string(),
+  enable: z.boolean(),
+  group: z.string(),
+  id: z.number().int(),
+  inScope: z.boolean(),
+});
+export type AttachCandidate = z.infer<typeof AttachCandidateSchema>;
+
+export const AttachCandidatePageSchema = z.object({
+  eligible: z.number().int(),
+  groups: z.array(z.string()),
+  items: z.array(z.lazy(() => AttachCandidateSchema)),
+  maxId: z.number().int().optional(),
+  scopeToken: z.string().optional(),
+  total: z.number().int(),
+});
+export type AttachCandidatePage = z.infer<typeof AttachCandidatePageSchema>;
+
+export const AttachJobStatusSchema = z.object({
+  ended: z.string(),
+  error: z.string().optional(),
+  result: z.lazy(() => AttachSelectionResultSchema).nullable().optional(),
+  running: z.boolean(),
+});
+export type AttachJobStatus = z.infer<typeof AttachJobStatusSchema>;
+
+export const AttachSelectionResultSchema = z.object({
+  attached: z.number().int(),
+  errors: z.number().int(),
+  skipped: z.number().int(),
+});
+export type AttachSelectionResult = z.infer<typeof AttachSelectionResultSchema>;
+
 export const BlockerSchema = z.object({
   code: z.lazy(() => BlockerCodeSchema),
   detail: z.string().optional(),
@@ -1347,6 +1383,27 @@ export const SubBalancerSchema = z.object({
   updatedAt: z.number().int(),
 });
 export type SubBalancer = z.infer<typeof SubBalancerSchema>;
+
+export const SubBalancerProblemSchema = z.object({
+  code: z.string(),
+  detail: z.string().optional(),
+  inboundIds: z.array(z.number().int()).optional(),
+});
+export type SubBalancerProblem = z.infer<typeof SubBalancerProblemSchema>;
+
+export const SubBalancerWithProblemsSchema = z.object({
+  createdAt: z.number().int(),
+  enabled: z.boolean(),
+  id: z.number().int(),
+  inboundIds: z.array(z.number().int()),
+  memberWeights: z.record(z.number().int(), z.number()).optional(),
+  problems: z.array(z.lazy(() => SubBalancerProblemSchema)),
+  remark: z.string().max(256),
+  sortOrder: z.number().int().min(1),
+  strategy: z.enum(['leastLoad', 'leastPing', 'random', 'roundRobin']),
+  updatedAt: z.number().int(),
+});
+export type SubBalancerWithProblems = z.infer<typeof SubBalancerWithProblemsSchema>;
 
 export const TgBotCapabilitiesSchema = z.object({
   groupPrivacy: z.boolean(),

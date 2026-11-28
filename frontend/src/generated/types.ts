@@ -447,6 +447,38 @@ export interface ApiTokenView {
   token?: string;
 }
 
+export interface AttachCandidate {
+  alreadyAttached: boolean;
+  comment: string;
+  email: string;
+  enable: boolean;
+  group: string;
+  id: number;
+  inScope: boolean;
+}
+
+export interface AttachCandidatePage {
+  eligible: number;
+  groups: string[];
+  items: AttachCandidate[];
+  maxId?: number;
+  scopeToken?: string;
+  total: number;
+}
+
+export interface AttachJobStatus {
+  ended: string;
+  error?: string;
+  result?: AttachSelectionResult | null;
+  running: boolean;
+}
+
+export interface AttachSelectionResult {
+  attached: number;
+  errors: number;
+  skipped: number;
+}
+
 export interface Blocker {
   code: BlockerCode;
   detail?: string;
@@ -1264,6 +1296,25 @@ export interface SubBalancer {
   id: number;
   inboundIds: number[];
   memberWeights?: Record<number, number>;
+  remark: string;
+  sortOrder: number;
+  strategy: string;
+  updatedAt: number;
+}
+
+export interface SubBalancerProblem {
+  code: string;
+  detail?: string;
+  inboundIds?: number[];
+}
+
+export interface SubBalancerWithProblems {
+  createdAt: number;
+  enabled: boolean;
+  id: number;
+  inboundIds: number[];
+  memberWeights?: Record<number, number>;
+  problems: SubBalancerProblem[];
   remark: string;
   sortOrder: number;
   strategy: string;
